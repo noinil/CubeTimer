@@ -50,14 +50,16 @@ export default function RubiksCubeCSS({ cubeState }: RubiksCubeCSSProps) {
   };
 
   return (
-    <div className="w-full h-full bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+    <div
+      className="w-full h-full bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
       <div
-        className="relative select-none cursor-grab active:cursor-grabbing"
+        className="relative"
         style={{ perspective: '1000px' }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
       >
         <div
           className="relative transition-transform duration-100"

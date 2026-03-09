@@ -83,7 +83,7 @@ export default function App() {
                   <span>新打乱</span>
                 </button>
               </div>
-              <div className="aspect-square">
+              <div className="aspect-[2/1]">
                 {cubeState && <RubiksCubeCSS cubeState={cubeState} />}
               </div>
               <div className="mt-2 text-xs text-gray-400 text-center">
