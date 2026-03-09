@@ -9,6 +9,17 @@ interface StatisticsProps {
   onClearAll: () => void;
 }
 
+// 计算 AoN：去掉最好和最差，平均中间成绩；DNF 按 Infinity 处理
+function calcAo(records: TimeRecord[], startIndex: number, n: number): number | null {
+  if (startIndex + n > records.length) return null;
+  const slice = records.slice(startIndex, startIndex + n);
+  const times = slice.map(r => r.dnf ? Infinity : r.time + (r.plus2 ? 2000 : 0));
+  const sorted = [...times].sort((a, b) => a - b);
+  const middle = sorted.slice(1, n - 1);
+  if (middle.some(t => t === Infinity)) return Infinity;
+  return middle.reduce((a, b) => a + b, 0) / middle.length;
+}
+
 export default function Statistics({ records, onDeleteRecord, onClearAll }: StatisticsProps) {
   // 格式化时间
   const formatTime = (ms: number) => {
@@ -252,13 +263,20 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
                 <tr className="text-left text-sm text-gray-400 border-b border-gray-700">
                   <th className="pb-3 pr-4">#</th>
                   <th className="pb-3 pr-4">时间</th>
+                  <th className="pb-3 pr-4 text-purple-400">Ao5</th>
+                  <th className="pb-3 pr-4 text-yellow-400">Ao12</th>
                   <th className="pb-3 pr-4">打乱公式</th>
                   <th className="pb-3 pr-4">日期</th>
                   <th className="pb-3"></th>
                 </tr>
               </thead>
               <tbody>
-                {records.map((record, index) => (
+                {records.map((record, index) => {
+                  const ao5 = calcAo(records, index, 5);
+                  const ao12 = calcAo(records, index, 12);
+                  const fmtAo = (v: number | null) =>
+                    v === null ? '-' : v === Infinity ? 'DNF' : formatTime(v);
+                  return (
                   <tr
                     key={record.id}
                     className="border-b border-gray-700 hover:bg-gray-750 transition-colors"
@@ -272,6 +290,8 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
                         )}
                       </span>
                     </td>
+                    <td className="py-1.5 pr-4 font-mono text-sm text-purple-400">{fmtAo(ao5)}</td>
+                    <td className="py-1.5 pr-4 font-mono text-sm text-yellow-400">{fmtAo(ao12)}</td>
                     <td className="py-1.5 pr-4 text-sm text-gray-400 font-mono">
                       {record.scramble.substring(0, 30)}...
                     </td>
@@ -287,7 +307,8 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
