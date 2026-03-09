@@ -21,6 +21,28 @@ function calcAo(records: TimeRecord[], startIndex: number, n: number): number | 
 }
 
 export default function Statistics({ records, onDeleteRecord, onClearAll }: StatisticsProps) {
+  const handleSaveRecords = () => {
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const filename = `results/${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.dat`;
+
+    const header = `# scramble,time,date`;
+    const rows = records.map(r => {
+      const scramble = r.scramble.replace(/\s+/g, '');
+      const time = r.dnf ? 'DNF' : formatTime(r.time + (r.plus2 ? 2000 : 0));
+      const date = new Date(r.date).toLocaleString('zh-CN');
+      return `${scramble},${time},${date}`;
+    });
+
+    const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // 格式化时间
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -243,12 +265,20 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-base font-semibold text-white">计时记录</h3>
           {records.length > 0 && (
-            <button
-              onClick={onClearAll}
-              className="text-sm text-red-400 hover:text-red-300 transition-colors"
-            >
-              清空所有记录
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSaveRecords}
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                保存记录
+              </button>
+              <button
+                onClick={onClearAll}
+                className="text-sm text-red-400 hover:text-red-300 transition-colors"
+              >
+                清空所有记录
+              </button>
+            </div>
           )}
         </div>
         
