@@ -59,33 +59,33 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-[1800px] mx-auto space-y-6">
+    <div className="min-h-screen bg-gray-900 text-white p-4">
+      <div className="max-w-[1800px] mx-auto space-y-4">
         {/* 标题 */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2">魔方计时器</h1>
-          <p className="text-gray-400">3x3 Rubik's Cube Timer</p>
+        <div className="text-center py-1">
+          <h1 className="text-2xl font-bold">魔方计时器</h1>
+          <p className="text-gray-400 text-sm">3x3 Rubik's Cube Timer</p>
         </div>
 
         {/* 主要内容区域 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* 左侧：3D魔方 */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 rounded-lg p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">魔方预览</h2>
+            <div className="bg-gray-800 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-base font-semibold">魔方预览</h2>
                 <button
                   onClick={generateNewScramble}
-                  className="flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors text-sm"
+                  className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 rounded transition-colors text-xs"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3.5 h-3.5" />
                   <span>新打乱</span>
                 </button>
               </div>
               <div className="aspect-square">
                 {cubeState && <RubiksCubeCSS cubeState={cubeState} />}
               </div>
-              <div className="mt-4 text-sm text-gray-400 text-center">
+              <div className="mt-2 text-xs text-gray-400 text-center">
                 拖动旋转 • 滚轮缩放
               </div>
             </div>
@@ -93,15 +93,15 @@ export default function App() {
 
           {/* 右侧：计时器 */}
           <div className="lg:col-span-2">
-            <Timer 
-              scramble={scramble} 
+            <Timer
+              scramble={scramble}
               onTimeRecorded={handleTimeRecorded}
             />
           </div>
         </div>
 
         {/* 统计信息 */}
-        <Statistics 
+        <Statistics
           records={records}
           onDeleteRecord={handleDeleteRecord}
           onClearAll={handleClearAll}

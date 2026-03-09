@@ -120,17 +120,17 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-8 flex flex-col items-center justify-center space-y-6">
+    <div className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center space-y-4">
       {/* 打乱公式 */}
-      <div className="text-center">
-        <div className="text-sm text-gray-400 mb-2">打乱公式</div>
-        <div className="text-xl font-mono text-white px-6 py-3 bg-gray-700 rounded">
+      <div className="text-center w-full">
+        <div className="text-xs text-gray-400 mb-1">打乱公式</div>
+        <div className="text-base font-mono text-white px-4 py-2 bg-gray-700 rounded">
           {scramble}
         </div>
       </div>
 
       {/* 计时器显示 */}
-      <div className={`text-9xl font-bold tabular-nums ${getDisplayColor()} transition-colors`}>
+      <div className={`text-8xl font-bold tabular-nums ${getDisplayColor()} transition-colors`}>
         {formatTime(displayTime)}
       </div>
 
@@ -156,7 +156,7 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
         {state === 'stopped' && (
           <button
             onClick={handleReset}
-            className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+            className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
             <span>重新开始</span>
@@ -165,7 +165,7 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
       </div>
 
       {/* 键盘提示 */}
-      <div className="text-xs text-gray-500 mt-4">
+      <div className="text-xs text-gray-500">
         <div className="bg-gray-700 px-3 py-1 rounded inline-block">
           空格键控制计时
         </div>

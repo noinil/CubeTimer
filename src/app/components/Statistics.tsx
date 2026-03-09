@@ -112,9 +112,9 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
   }, [records]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard
           icon={<Award className="w-5 h-5" />}
           label="最佳"
@@ -154,12 +154,12 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
       </div>
 
       {/* 图表 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Histogram */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">时间分布</h3>
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h3 className="text-base font-semibold text-white mb-3">时间分布</h3>
           {histogramData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={160}>
               <BarChart data={histogramData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis 
@@ -181,17 +181,17 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-gray-500">
+            <div className="h-[160px] flex items-center justify-center text-gray-500">
               暂无数据
             </div>
           )}
         </div>
 
         {/* 趋势图 */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-white mb-4">最近20次趋势</h3>
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h3 className="text-base font-semibold text-white mb-3">最近20次趋势</h3>
           {trendData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={160}>
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis 
@@ -220,7 +220,7 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-gray-500">
+            <div className="h-[160px] flex items-center justify-center text-gray-500">
               暂无数据
             </div>
           )}
@@ -228,9 +228,9 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
       </div>
 
       {/* 记录表格 */}
-      <div className="bg-gray-800 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-white">计时记录</h3>
+      <div className="bg-gray-800 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-base font-semibold text-white">计时记录</h3>
           {records.length > 0 && (
             <button
               onClick={onClearAll}
@@ -242,7 +242,7 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
         </div>
         
         {records.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
+          <div className="text-center py-8 text-gray-400">
             暂无记录，开始你的第一次计时吧！
           </div>
         ) : (
@@ -259,12 +259,12 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
               </thead>
               <tbody>
                 {records.map((record, index) => (
-                  <tr 
+                  <tr
                     key={record.id}
                     className="border-b border-gray-700 hover:bg-gray-750 transition-colors"
                   >
-                    <td className="py-3 pr-4 text-gray-400">{index + 1}</td>
-                    <td className="py-3 pr-4">
+                    <td className="py-1.5 pr-4 text-gray-400">{index + 1}</td>
+                    <td className="py-1.5 pr-4">
                       <span className={`font-mono ${record.dnf ? 'text-red-400' : 'text-white'}`}>
                         {record.dnf ? 'DNF' : formatTime(record.time)}
                         {record.plus2 && !record.dnf && (
@@ -272,13 +272,13 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
                         )}
                       </span>
                     </td>
-                    <td className="py-3 pr-4 text-sm text-gray-400 font-mono">
+                    <td className="py-1.5 pr-4 text-sm text-gray-400 font-mono">
                       {record.scramble.substring(0, 30)}...
                     </td>
-                    <td className="py-3 pr-4 text-sm text-gray-400">
+                    <td className="py-1.5 pr-4 text-sm text-gray-400">
                       {new Date(record.date).toLocaleString('zh-CN')}
                     </td>
-                    <td className="py-3">
+                    <td className="py-1.5">
                       <button
                         onClick={() => onDeleteRecord(record.id)}
                         className="text-red-400 hover:text-red-300 transition-colors"
@@ -299,12 +299,12 @@ export default function Statistics({ records, onDeleteRecord, onClearAll }: Stat
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
   return (
-    <div className="bg-gray-800 rounded-lg p-4">
-      <div className="flex items-center space-x-2 text-gray-400 mb-2">
+    <div className="bg-gray-800 rounded-lg p-3">
+      <div className="flex items-center space-x-1.5 text-gray-400 mb-1">
         {icon}
-        <span className="text-sm">{label}</span>
+        <span className="text-xs">{label}</span>
       </div>
-      <div className={`text-2xl font-bold ${color}`}>
+      <div className={`text-xl font-bold ${color}`}>
         {value}
       </div>
     </div>
