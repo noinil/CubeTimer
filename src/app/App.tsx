@@ -27,12 +27,13 @@ export default function App() {
   }, []);
 
   // 记录时间
-  const handleTimeRecorded = (time: number) => {
+  const handleTimeRecorded = (time: number, dnf?: boolean) => {
     const record: TimeRecord = {
       id: Date.now().toString(),
       time,
       scramble,
       date: new Date().toISOString(),
+      dnf,
     };
     
     saveRecord(record);
