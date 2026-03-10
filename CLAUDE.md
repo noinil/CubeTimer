@@ -5,96 +5,68 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm install --legacy-peer-deps   # Install dependencies (react/react-dom are peerDeps, install with --force if needed)
-npm run dev                      # Start development server (Vite, default port 5173)
-npm run build                    # Production build
+npm install --legacy-peer-deps   # install deps (react/react-dom are peerDeps)
+npm run dev                      # dev server at localhost:5173 (Vite, HMR)
+npm run build                    # production build
 ```
 
-There is no test suite or linter configured.
+No test suite or linter configured.
 
-## Architecture
+## Stack & entry point
 
-This is a React + TypeScript + Vite + Tailwind CSS 4 app — a Rubik's Cube speedsolving timer supporting 2×2, 3×3, and 4×4.
+React + TypeScript + Vite + Tailwind CSS 4. Entry: `src/main.tsx` → `src/app/App.tsx`.
+Path alias `@` → `src/`. Dark theme (`bg-gray-900`).
 
-**Entry point:** `src/main.tsx` → `src/app/App.tsx`
+## Key files
 
-**Core data flow in `App.tsx`:**
-1. User selects puzzle type (2×2 / 3×3 / 4×4) via dropdown in the header
-2. On mount or type change, generates a scramble via the corresponding `generateScramble*()` and computes `CubeState` via the corresponding `applyScramble*()`
-3. Passes `scramble` + `onTimeRecorded(time, dnf?)` callback to `<Timer>`
-4. Passes `cubeState` + `size` to `<RubiksCubeCSS>` for the 3D preview
-5. When a solve completes (or DNFs), saves the `TimeRecord` (including `puzzleType`) to `localStorage`, then auto-generates a new scramble after 1 second
-6. **Switching puzzle type** triggers a save prompt (`confirm`); regardless of the answer, `clearAllRecords()` is called and the records list is wiped — records do not persist across type switches
+| File | Purpose |
+|------|---------|
+| `src/app/types/cube.ts` | `TimeRecord`, `CubeState`, `PuzzleType` (`'2x2'\|'3x3'\|'4x4'`), `Move` |
+| `src/app/utils/cubeLogic.ts` | 3×3 scramble + cube state |
+| `src/app/utils/cubeLogic2x2.ts` | 2×2 scramble + cube state (4 stickers/face) |
+| `src/app/utils/cubeLogic4x4.ts` | 4×4 scramble + cube state (16 stickers/face, wide moves) |
+| `src/app/utils/storage.ts` | localStorage CRUD (`rubiks-timer-records`); `exportRecords(records, puzzleType)` shared by App and Statistics |
+| `src/app/components/Timer.tsx` | Spacebar timer with WCA inspection |
+| `src/app/components/RubiksCubeCSS.tsx` | CSS `preserve-3d` cube; `size` prop (2\|3\|4) controls face px and grid cols; outer div needs `relative` |
+| `src/app/components/Statistics.tsx` | Stat cards, Recharts charts, Ao5/Ao12 table, CSV export |
+| `src/app/components/ui/` | shadcn/ui component library (mostly unused directly) |
 
-**Key files:**
-- `src/app/types/cube.ts` — `TimeRecord`, `CubeState`, `PuzzleType` (`'2x2'|'3x3'|'4x4'`), and `Move` types
-- `src/app/utils/cubeLogic.ts` — 3×3 scramble generation and cube state simulation
-- `src/app/utils/cubeLogic2x2.ts` — 2×2 scramble generation and cube state simulation (4 stickers per face)
-- `src/app/utils/cubeLogic4x4.ts` — 4×4 scramble generation (regular + wide moves) and cube state simulation (16 stickers per face)
-- `src/app/utils/storage.ts` — localStorage CRUD for `TimeRecord[]` under key `rubiks-timer-records`; also exports `exportRecords(records, puzzleType)` (shared by Statistics and App) and a private `formatTime` helper
-- `src/app/components/Timer.tsx` — spacebar-driven timer with WCA-style inspection
-- `src/app/components/RubiksCubeCSS.tsx` — CSS 3D cube rendered with `preserve-3d`, accepts `size` prop (2|3|4); face dimensions and grid columns adapt automatically; outer container must have `relative` so the label stays inside the panel
-- `src/app/components/Statistics.tsx` — stat cards, Recharts charts, solve history table with per-row Ao5/Ao12, and CSV export
+## App flow
 
-**UI components:** `src/app/components/ui/` contains a full shadcn/ui component library (Radix UI primitives + Tailwind). Most of the app uses custom Tailwind styling directly.
-
-**Path alias:** `@` maps to `src/` (configured in `vite.config.ts`).
-
-**Styling:** Tailwind CSS 4 via `@tailwindcss/vite` plugin. Dark theme (`bg-gray-900`).
+1. Header dropdown selects puzzle type (2×2 / 3×3 / 4×4)
+2. On mount or type change: generate scramble → compute `CubeState` → show in preview
+3. Spacebar starts timer; on stop, `TimeRecord` (with `puzzleType`) saved to localStorage; new scramble generated after 1 s
+4. **Switching puzzle type**: prompts to save current records, then **always** calls `clearAllRecords()` and wipes the list — records do not persist across switches
 
 ## Timer state machine
 
-`idle` → (any space press) → `inspection` → (hold space 300ms) → `ready` → (release space) → `running` → (space press) → `stopped`
+`idle` → (space) → `inspection` → (hold space 300 ms) → `ready` → (release) → `running` → (space) → `stopped`
 
-- **inspection**: 15-second WCA countdown displayed in red. If it expires before the user holds space, the solve is recorded as DNF automatically.
-- **ready**: displays `0.00` in green.
-- **stopped + DNF**: displays `DNF` in red.
-- After `stopped`, the next space press restarts from `inspection`.
-- All timer state uses refs (`inspectionIntervalRef`, `inspectionExpireRef`, `runningIntervalRef`) to avoid stale closure issues. `onTimeRecordedRef` keeps the callback fresh.
+- Inspection: 15 s WCA countdown in red; expires → auto DNF
+- Ready: shows `0.00` in green. Stopped+DNF: shows `DNF` in red
+- All state in refs to avoid stale closures
 
-## Scramble generation rules
+## Scramble rules
 
-All generators avoid same-face consecutive moves. **Even-order cubes (2×2, 4×4) additionally avoid opposite-face consecutive moves** (L↔R, U↔D, F↔B on the same axis), preventing redundant pairs like `Rw Lw` or `R L`. This is enforced via `OPPOSITE_FACE` map in each file.
+- All generators: no same-face consecutive moves
+- **2×2 and 4×4 also block opposite-face consecutive moves** (L↔R, U↔D, F↔B) via `OPPOSITE_FACE` map — prevents pairs like `Rw Lw`
+- Lengths: 2×2 = 11, 3×3 = 20, 4×4 = 40
+- 4×4 moves: U/D/F/B/L/R + wide Uw/Dw/Fw/Bw/Lw/Rw, each with `'`/`2` variants
 
-Scramble lengths: 2×2 = 11 moves, 3×3 = 20 moves, 4×4 = 40 moves.
+## Cube logic
 
-4×4 move set: regular face moves (U/D/F/B/L/R + `'`/`2`) plus wide moves (Uw/Dw/Fw/Bw/Lw/Rw + `'`/`2`). Wide moves rotate the outer face **and** the inner adjacent layer.
+**2×2** — face indices: `0 1 / 2 3`. CW rotation: `new = [old[2],old[0],old[3],old[1]]`. Edge cycles: 2 stickers per adjacent row/col. CCW = 3× CW.
 
-## 2×2 cube logic (`cubeLogic2x2.ts`)
+**4×4** — face indices row-major 0–15. CW rotation: `new[i*4+j] = old[(3-j)*4+i]`. Each move has an outer edge cycle; wide moves add an inner edge cycle. CCW = 3× CW.
 
-Each face has 4 stickers indexed as:
-```
-0 | 1
------
-2 | 3
-```
-Clockwise face rotation: `new = [old[2], old[0], old[3], old[1]]`. Edge cycles mirror the 3×3 logic but operate on 2 stickers per adjacent row/column instead of 3. CCW = 3× CW.
+## Statistics / CSV export
 
-## 4×4 cube logic (`cubeLogic4x4.ts`)
+- Ao5/Ao12: `calcAo(records, startIndex, n)` — drop best+worst, average middle; DNF = Infinity; ≥2 DNFs → "DNF"
+- Export filename: `CubeTimerResults/<puzzleType>_YYYYMMDD_HHMMSS.dat`
+- File format: `# puzzle: 3x3` / `# scramble,time,date` / one row per solve
 
-Each face has 16 stickers indexed row-major:
-```
- 0  1  2  3
- 4  5  6  7
- 8  9 10 11
-12 13 14 15
-```
-Clockwise face rotation: `new[i*4+j] = old[(3-j)*4+i]`. Each move applies an **outer** edge cycle (e.g., row 0 for U). Wide moves additionally apply an **inner** edge cycle (e.g., row 1 for Uw). CCW = 3× CW for both face rotation and edge cycles.
+## Known constraints
 
-## Statistics / records table
-
-- Per-row **Ao5** and **Ao12** are computed by `calcAo(records, startIndex, n)`: takes `n` consecutive records starting at the row's index (newest-first array), drops best and worst, averages the middle. DNF counts as Infinity; two or more DNFs in a window → display "DNF".
-- **Save records** button exports a `.dat` (CSV) file via browser download. Filename: `CubeTimerResults/<puzzleType>_YYYYMMDD_HHMMSS.dat`. Format:
-  ```
-  # puzzle: 3x3
-  # scramble,time,date
-  R2F'U2B'L...,12.34,2026/3/9 14:25:00
-  ```
-  Scramble has spaces stripped. Time is formatted (e.g. `12.34` or `1:02.34`). DNF records show `DNF` for time.
-
-## Known constraints / gotchas
-
-- `react` and `react-dom` are listed as `peerDependencies` (optional) and are **not** auto-installed. Run `npm install --force react@18.3.1 react-dom@18.3.1` if they are missing.
-- `plus2` penalty exists on `TimeRecord` type and is handled in stat calculations, but there is no UI to apply it yet.
-- The browser download API cannot write directly to the filesystem; the `CubeTimerResults/` prefix in the filename is a hint — Chrome creates the subfolder in Downloads, other browsers may not.
-- Records from before the multi-puzzle feature have no `puzzleType` field; treat them as 3×3.
+- `react`/`react-dom` not auto-installed: `npm install --force react@18.3.1 react-dom@18.3.1` if missing
+- `plus2` penalty is in `TimeRecord` and stat calculations but has no UI yet
+- Browser download API: `CubeTimerResults/` prefix is a hint only — Chrome may create the subfolder, others may not
