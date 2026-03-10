@@ -24,13 +24,14 @@ This is a React + TypeScript + Vite + Tailwind CSS 4 app — a Rubik's Cube spee
 3. Passes `scramble` + `onTimeRecorded(time, dnf?)` callback to `<Timer>`
 4. Passes `cubeState` + `size` to `<RubiksCubeCSS>` for the 3D preview
 5. When a solve completes (or DNFs), saves the `TimeRecord` (including `puzzleType`) to `localStorage`, then auto-generates a new scramble after 1 second
+6. **Switching puzzle type** triggers a save prompt (`confirm`); regardless of the answer, `clearAllRecords()` is called and the records list is wiped — records do not persist across type switches
 
 **Key files:**
 - `src/app/types/cube.ts` — `TimeRecord`, `CubeState`, `PuzzleType` (`'2x2'|'3x3'|'4x4'`), and `Move` types
 - `src/app/utils/cubeLogic.ts` — 3×3 scramble generation and cube state simulation
 - `src/app/utils/cubeLogic2x2.ts` — 2×2 scramble generation and cube state simulation (4 stickers per face)
 - `src/app/utils/cubeLogic4x4.ts` — 4×4 scramble generation (regular + wide moves) and cube state simulation (16 stickers per face)
-- `src/app/utils/storage.ts` — localStorage CRUD for `TimeRecord[]` under key `rubiks-timer-records`
+- `src/app/utils/storage.ts` — localStorage CRUD for `TimeRecord[]` under key `rubiks-timer-records`; also exports `exportRecords(records, puzzleType)` (shared by Statistics and App) and a private `formatTime` helper
 - `src/app/components/Timer.tsx` — spacebar-driven timer with WCA-style inspection
 - `src/app/components/RubiksCubeCSS.tsx` — CSS 3D cube rendered with `preserve-3d`, accepts `size` prop (2|3|4); face dimensions and grid columns adapt automatically; outer container must have `relative` so the label stays inside the panel
 - `src/app/components/Statistics.tsx` — stat cards, Recharts charts, solve history table with per-row Ao5/Ao12, and CSV export
