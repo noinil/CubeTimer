@@ -5,6 +5,7 @@ import Statistics from './components/Statistics';
 import { generateScramble, applyScramble } from './utils/cubeLogic';
 import { generateScramble2x2, applyScramble2x2 } from './utils/cubeLogic2x2';
 import { generateScramble4x4, applyScramble4x4 } from './utils/cubeLogic4x4';
+import { generateScramble5x5, applyScramble5x5 } from './utils/cubeLogic5x5';
 import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords } from './utils/storage';
 import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
 import { RotateCcw } from 'lucide-react';
@@ -25,6 +26,10 @@ export default function App() {
       const newScramble = generateScramble4x4(40);
       setScramble(newScramble);
       setCubeState(applyScramble4x4(newScramble));
+    } else if (type === '5x5') {
+      const newScramble = generateScramble5x5(60);
+      setScramble(newScramble);
+      setCubeState(applyScramble5x5(newScramble));
     } else {
       const newScramble = generateScramble(20);
       setScramble(newScramble);
@@ -99,6 +104,7 @@ export default function App() {
               <option value="3x3">3×3</option>
               <option value="2x2">2×2</option>
               <option value="4x4">4×4</option>
+              <option value="5x5">5×5</option>
             </select>
           </div>
         </div>
@@ -122,7 +128,7 @@ export default function App() {
                 {cubeState && (
                   <RubiksCubeCSS
                     cubeState={cubeState}
-                    size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : 3}
+                    size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : puzzleType === '5x5' ? 5 : 3}
                   />
                 )}
               </div>

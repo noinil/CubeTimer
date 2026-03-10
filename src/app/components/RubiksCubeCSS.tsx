@@ -3,7 +3,7 @@ import type { CubeState } from '../types/cube';
 
 interface RubiksCubeCSSProps {
   cubeState: CubeState;
-  size?: 2 | 3 | 4;
+  size?: 2 | 3 | 4 | 5;
 }
 
 export default function RubiksCubeCSS({ cubeState, size = 3 }: RubiksCubeCSSProps) {
@@ -12,9 +12,9 @@ export default function RubiksCubeCSS({ cubeState, size = 3 }: RubiksCubeCSSProp
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
 
-  const faceSize = size === 2 ? 100 : size === 4 ? 120 : 150;
+  const faceSize = size === 2 ? 100 : size === 4 ? 120 : size === 5 ? 130 : 150;
   const halfSize = faceSize / 2;
-  const gridCols = size === 2 ? 'grid-cols-2' : size === 4 ? 'grid-cols-4' : 'grid-cols-3';
+  const gridCols = size === 2 ? 'grid-cols-2' : size === 4 ? 'grid-cols-4' : size === 5 ? 'grid-cols-5' : 'grid-cols-3';
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
