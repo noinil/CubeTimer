@@ -14,23 +14,27 @@ export function createSolvedCube2x2(): CubeState {
   };
 }
 
+const OPPOSITE_FACE: Record<string, string> = { U:'D', D:'U', F:'B', B:'F', L:'R', R:'L' };
+
 // 生成二阶打乱公式（默认11步）
 export function generateScramble2x2(length: number = 11): string {
   const moves: Move[] = ['U', 'D', 'F', 'B', 'L', 'R'];
   const modifiers = ['', "'", '2'];
   const scramble: string[] = [];
-  let lastMove = '';
+  let lastFace = '';
 
   for (let i = 0; i < length; i++) {
     let move: string;
+    let face: string;
     do {
       const baseMove = moves[Math.floor(Math.random() * moves.length)];
       const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
       move = baseMove + modifier;
-    } while (move[0] === lastMove[0]);
+      face = baseMove as string;
+    } while (face === lastFace || face === OPPOSITE_FACE[lastFace]);
 
     scramble.push(move);
-    lastMove = move;
+    lastFace = face;
   }
 
   return scramble.join(' ');

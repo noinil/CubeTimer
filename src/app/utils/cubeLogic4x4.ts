@@ -21,6 +21,8 @@ export function createSolvedCube4x4(): CubeState {
   };
 }
 
+const OPPOSITE_FACE: Record<string, string> = { U:'D', D:'U', F:'B', B:'F', L:'R', R:'L' };
+
 // 生成四阶打乱（40步，包含普通移动和宽转）
 export function generateScramble4x4(length: number = 40): string {
   const baseMoves = ['U', 'D', 'F', 'B', 'L', 'R'];
@@ -33,11 +35,13 @@ export function generateScramble4x4(length: number = 40): string {
   for (let i = 0; i < length; i++) {
     let base: string;
     let move: string;
+    let face: string;
     do {
       base = allMoves[Math.floor(Math.random() * allMoves.length)];
       const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
       move = base + modifier;
-    } while (base[0] === lastFace);
+      face = base[0];
+    } while (face === lastFace || face === OPPOSITE_FACE[lastFace]);
 
     scramble.push(move);
     lastFace = base[0];
