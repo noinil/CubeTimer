@@ -3,13 +3,18 @@ import type { CubeState } from '../types/cube';
 
 interface RubiksCubeCSSProps {
   cubeState: CubeState;
+  size?: 2 | 3;
 }
 
-export default function RubiksCubeCSS({ cubeState }: RubiksCubeCSSProps) {
+export default function RubiksCubeCSS({ cubeState, size = 3 }: RubiksCubeCSSProps) {
   const [rotateX, setRotateX] = useState(-25);
   const [rotateY, setRotateY] = useState(45);
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+
+  const faceSize = size === 2 ? 100 : 150;
+  const halfSize = faceSize / 2;
+  const gridCols = size === 2 ? 'grid-cols-2' : 'grid-cols-3';
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -18,10 +23,8 @@ export default function RubiksCubeCSS({ cubeState }: RubiksCubeCSSProps) {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
-    
     const deltaX = e.clientX - startPos.x;
     const deltaY = e.clientY - startPos.y;
-    
     setRotateY(rotateY + deltaX * 0.5);
     setRotateX(rotateX - deltaY * 0.5);
     setStartPos({ x: e.clientX, y: e.clientY });
@@ -35,8 +38,8 @@ export default function RubiksCubeCSS({ cubeState }: RubiksCubeCSSProps) {
     const colors = cubeState.faces[faceName];
     return (
       <div
-        className="absolute w-[150px] h-[150px] grid grid-cols-3 gap-1 p-1 bg-black"
-        style={{ transform }}
+        className={`absolute grid ${gridCols} gap-1 p-1 bg-black`}
+        style={{ transform, width: `${faceSize}px`, height: `${faceSize}px` }}
       >
         {colors.map((color, i) => (
           <div
@@ -57,36 +60,22 @@ export default function RubiksCubeCSS({ cubeState }: RubiksCubeCSSProps) {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <div
-        className="relative"
-        style={{ perspective: '1000px' }}
-      >
+      <div className="relative" style={{ perspective: '1000px' }}>
         <div
           className="relative transition-transform duration-100"
           style={{
             transformStyle: 'preserve-3d',
             transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-            width: '150px',
-            height: '150px',
+            width: `${faceSize}px`,
+            height: `${faceSize}px`,
           }}
         >
-          {/* Front - Green */}
-          {renderFace('F', 'translateZ(75px)')}
-          
-          {/* Back - Blue */}
-          {renderFace('B', 'translateZ(-75px) rotateY(180deg)')}
-          
-          {/* Top - White */}
-          {renderFace('U', 'rotateX(90deg) translateZ(75px)')}
-          
-          {/* Bottom - Yellow */}
-          {renderFace('D', 'rotateX(-90deg) translateZ(75px)')}
-          
-          {/* Left - Orange */}
-          {renderFace('L', 'rotateY(-90deg) translateZ(75px)')}
-          
-          {/* Right - Red */}
-          {renderFace('R', 'rotateY(90deg) translateZ(75px)')}
+          {renderFace('F', `translateZ(${halfSize}px)`)}
+          {renderFace('B', `translateZ(-${halfSize}px) rotateY(180deg)`)}
+          {renderFace('U', `rotateX(90deg) translateZ(${halfSize}px)`)}
+          {renderFace('D', `rotateX(-90deg) translateZ(${halfSize}px)`)}
+          {renderFace('L', `rotateY(-90deg) translateZ(${halfSize}px)`)}
+          {renderFace('R', `rotateY(90deg) translateZ(${halfSize}px)`)}
         </div>
       </div>
       <div className="absolute bottom-4 text-xs text-gray-500">

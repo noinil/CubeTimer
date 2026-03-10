@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Trash2, Award, TrendingDown, TrendingUp, Clock } from 'lucide-react';
-import type { TimeRecord } from '../types/cube';
+import type { TimeRecord, PuzzleType } from '../types/cube';
 
 interface StatisticsProps {
   records: TimeRecord[];
+  puzzleType: PuzzleType;
   onDeleteRecord: (id: string) => void;
   onClearAll: () => void;
 }
@@ -20,13 +21,14 @@ function calcAo(records: TimeRecord[], startIndex: number, n: number): number | 
   return middle.reduce((a, b) => a + b, 0) / middle.length;
 }
 
-export default function Statistics({ records, onDeleteRecord, onClearAll }: StatisticsProps) {
+export default function Statistics({ records, puzzleType, onDeleteRecord, onClearAll }: StatisticsProps) {
   const handleSaveRecords = () => {
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const filename = `results/${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.dat`;
+    const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+    const filename = `CubeTimerResults/${puzzleType}_${timestamp}.dat`;
 
-    const header = `# scramble,time,date`;
+    const header = `# puzzle: ${puzzleType}\n# scramble,time,date`;
     const rows = records.map(r => {
       const scramble = r.scramble.replace(/\s+/g, '');
       const time = r.dnf ? 'DNF' : formatTime(r.time + (r.plus2 ? 2000 : 0));
