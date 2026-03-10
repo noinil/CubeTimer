@@ -54,7 +54,7 @@ export default function RubiksCubeCSS({ cubeState, size = 3 }: RubiksCubeCSSProp
 
   return (
     <div
-      className="w-full h-full bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
+      className="relative w-full h-full bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center select-none cursor-grab active:cursor-grabbing"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
