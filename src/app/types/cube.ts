@@ -1,6 +1,6 @@
 // 魔方相关类型定义
 
-export type PuzzleType = '3x3' | '2x2';
+export type PuzzleType = '3x3' | '2x2' | '4x4';
 
 export interface TimeRecord {
   id: string;
