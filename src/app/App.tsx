@@ -6,6 +6,8 @@ import { generateScramble, applyScramble } from './utils/cubeLogic';
 import { generateScramble2x2, applyScramble2x2 } from './utils/cubeLogic2x2';
 import { generateScramble4x4, applyScramble4x4 } from './utils/cubeLogic4x4';
 import { generateScramble5x5, applyScramble5x5 } from './utils/cubeLogic5x5';
+import { generateScramble6x6, applyScramble6x6 } from './utils/cubeLogic6x6';
+import { generateScramble7x7, applyScramble7x7 } from './utils/cubeLogic7x7';
 import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords } from './utils/storage';
 import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
 import { RotateCcw } from 'lucide-react';
@@ -30,6 +32,14 @@ export default function App() {
       const newScramble = generateScramble5x5(60);
       setScramble(newScramble);
       setCubeState(applyScramble5x5(newScramble));
+    } else if (type === '6x6') {
+      const newScramble = generateScramble6x6(80);
+      setScramble(newScramble);
+      setCubeState(applyScramble6x6(newScramble));
+    } else if (type === '7x7') {
+      const newScramble = generateScramble7x7(100);
+      setScramble(newScramble);
+      setCubeState(applyScramble7x7(newScramble));
     } else {
       const newScramble = generateScramble(20);
       setScramble(newScramble);
@@ -105,6 +115,8 @@ export default function App() {
               <option value="2x2">2×2</option>
               <option value="4x4">4×4</option>
               <option value="5x5">5×5</option>
+              <option value="6x6">6×6</option>
+              <option value="7x7">7×7</option>
             </select>
           </div>
         </div>
@@ -128,7 +140,7 @@ export default function App() {
                 {cubeState && (
                   <RubiksCubeCSS
                     cubeState={cubeState}
-                    size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : puzzleType === '5x5' ? 5 : 3}
+                    size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : puzzleType === '5x5' ? 5 : puzzleType === '6x6' ? 6 : puzzleType === '7x7' ? 7 : 3}
                   />
                 )}
               </div>
