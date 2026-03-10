@@ -21,7 +21,7 @@ export default function App() {
   // 生成新的打乱公式
   const generateNewScramble = (type: PuzzleType = puzzleType) => {
     if (type === '2x2') {
-      const newScramble = generateScramble2x2(11);
+      const newScramble = generateScramble2x2(12);
       setScramble(newScramble);
       setCubeState(applyScramble2x2(newScramble));
     } else if (type === '4x4') {
@@ -41,7 +41,7 @@ export default function App() {
       setScramble(newScramble);
       setCubeState(applyScramble7x7(newScramble));
     } else {
-      const newScramble = generateScramble(20);
+      const newScramble = generateScramble(25);
       setScramble(newScramble);
       setCubeState(applyScramble(newScramble));
     }
