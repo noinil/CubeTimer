@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Trash2, Award, TrendingDown, TrendingUp, Clock } from 'lucide-react';
 import type { TimeRecord, PuzzleType } from '../types/cube';
+import { exportRecords } from '../utils/storage';
 
 interface StatisticsProps {
   records: TimeRecord[];
@@ -22,28 +23,7 @@ function calcAo(records: TimeRecord[], startIndex: number, n: number): number | 
 }
 
 export default function Statistics({ records, puzzleType, onDeleteRecord, onClearAll }: StatisticsProps) {
-  const handleSaveRecords = () => {
-    const now = new Date();
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-    const filename = `CubeTimerResults/${puzzleType}_${timestamp}.dat`;
-
-    const header = `# puzzle: ${puzzleType}\n# scramble,time,date`;
-    const rows = records.map(r => {
-      const scramble = r.scramble.replace(/\s+/g, '');
-      const time = r.dnf ? 'DNF' : formatTime(r.time + (r.plus2 ? 2000 : 0));
-      const date = new Date(r.date).toLocaleString('zh-CN');
-      return `${scramble},${time},${date}`;
-    });
-
-    const blob = new Blob([[header, ...rows].join('\n')], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const handleSaveRecords = () => exportRecords(records, puzzleType);
 
   // 格式化时间
   const formatTime = (ms: number) => {
@@ -51,7 +31,6 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     const milliseconds = Math.floor((ms % 1000) / 10);
-    
     if (minutes > 0) {
       return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
     }

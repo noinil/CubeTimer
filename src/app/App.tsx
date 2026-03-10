@@ -5,7 +5,7 @@ import Statistics from './components/Statistics';
 import { generateScramble, applyScramble } from './utils/cubeLogic';
 import { generateScramble2x2, applyScramble2x2 } from './utils/cubeLogic2x2';
 import { generateScramble4x4, applyScramble4x4 } from './utils/cubeLogic4x4';
-import { saveRecord, getRecords, deleteRecord, clearAllRecords } from './utils/storage';
+import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords } from './utils/storage';
 import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
 import { RotateCcw } from 'lucide-react';
 
@@ -32,8 +32,14 @@ export default function App() {
     }
   };
 
-  // 切换阶数时自动生成新打乱
+  // 切换阶数：询问是否保存，然后无论如何清空所有记录
   const handlePuzzleTypeChange = (type: PuzzleType) => {
+    if (records.length > 0) {
+      const shouldSave = confirm(`切换前是否保存当前 ${puzzleType} 的计时记录？`);
+      if (shouldSave) exportRecords(records, puzzleType);
+    }
+    clearAllRecords();
+    setRecords([]);
     setPuzzleType(type);
     generateNewScramble(type);
   };
