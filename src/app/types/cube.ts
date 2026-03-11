@@ -1,6 +1,6 @@
 // 魔方相关类型定义
 
-export type PuzzleType = '3x3' | '2x2' | '4x4' | '5x5' | '6x6' | '7x7';
+export type PuzzleType = '3x3' | '2x2' | '4x4' | '5x5' | '6x6' | '7x7' | 'Megaminx';
 
 export interface TimeRecord {
   id: string;
@@ -12,9 +12,9 @@ export interface TimeRecord {
   puzzleType?: PuzzleType;
 }
 
-// 通用魔方状态（每面格子数由阶数决定：3x3=9格，2x2=4格）
+// 通用魔方状态
 export interface CubeState {
-  faces: {
+  faces?: {
     U: string[];
     D: string[];
     F: string[];
@@ -22,6 +22,7 @@ export interface CubeState {
     L: string[];
     R: string[];
   };
+  megaminx?: string[]; // 132 个颜色的数组
 }
 
 export type Move = 'U' | 'D' | 'F' | 'B' | 'L' | 'R' |

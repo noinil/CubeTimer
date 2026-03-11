@@ -34,8 +34,10 @@ export default function RubiksCubeCSS({ cubeState, size = 3 }: RubiksCubeCSSProp
     setIsDragging(false);
   };
 
-  const renderFace = (faceName: keyof CubeState['faces'], transform: string) => {
+  const renderFace = (faceName: keyof NonNullable<CubeState['faces']>, transform: string) => {
+    if (!cubeState.faces) return null;
     const colors = cubeState.faces[faceName];
+    if (!colors) return null;
     return (
       <div
         className={`absolute grid ${gridCols} gap-1 p-1 bg-black`}
@@ -70,12 +72,16 @@ export default function RubiksCubeCSS({ cubeState, size = 3 }: RubiksCubeCSSProp
             height: `${faceSize}px`,
           }}
         >
-          {renderFace('F', `translateZ(${halfSize}px)`)}
-          {renderFace('B', `translateZ(-${halfSize}px) rotateY(180deg)`)}
-          {renderFace('U', `rotateX(90deg) translateZ(${halfSize}px)`)}
-          {renderFace('D', `rotateX(-90deg) translateZ(${halfSize}px)`)}
-          {renderFace('L', `rotateY(-90deg) translateZ(${halfSize}px)`)}
-          {renderFace('R', `rotateY(90deg) translateZ(${halfSize}px)`)}
+          {cubeState.faces && (
+            <>
+              {renderFace('F', `translateZ(${halfSize}px)`)}
+              {renderFace('B', `translateZ(-${halfSize}px) rotateY(180deg)`)}
+              {renderFace('U', `rotateX(90deg) translateZ(${halfSize}px)`)}
+              {renderFace('D', `rotateX(-90deg) translateZ(${halfSize}px)`)}
+              {renderFace('L', `rotateY(-90deg) translateZ(${halfSize}px)`)}
+              {renderFace('R', `rotateY(90deg) translateZ(${halfSize}px)`)}
+            </>
+          )}
         </div>
       </div>
       <div className="absolute bottom-4 text-xs text-gray-500">

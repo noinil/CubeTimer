@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import RubiksCubeCSS from './components/RubiksCubeCSS';
+import Megaminx3D from './components/Megaminx3D';
 import Timer from './components/Timer';
 import Statistics from './components/Statistics';
 import { generateScramble, applyScramble } from './utils/cubeLogic';
@@ -8,6 +9,7 @@ import { generateScramble4x4, applyScramble4x4 } from './utils/cubeLogic4x4';
 import { generateScramble5x5, applyScramble5x5 } from './utils/cubeLogic5x5';
 import { generateScramble6x6, applyScramble6x6 } from './utils/cubeLogic6x6';
 import { generateScramble7x7, applyScramble7x7 } from './utils/cubeLogic7x7';
+import { generateScrambleMegaminx, applyScrambleMegaminx } from './utils/cubeLogicMegaminx';
 import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords } from './utils/storage';
 import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
 import { RotateCcw } from 'lucide-react';
@@ -40,6 +42,10 @@ export default function App() {
       const newScramble = generateScramble7x7(100);
       setScramble(newScramble);
       setCubeState(applyScramble7x7(newScramble));
+    } else if (type === 'Megaminx') {
+      const newScramble = generateScrambleMegaminx(70);
+      setScramble(newScramble);
+      setCubeState(applyScrambleMegaminx(newScramble));
     } else {
       const newScramble = generateScramble(25);
       setScramble(newScramble);
@@ -117,6 +123,7 @@ export default function App() {
               <option value="5x5">5×5</option>
               <option value="6x6">6×6</option>
               <option value="7x7">7×7</option>
+              <option value="Megaminx">Megaminx</option>
             </select>
           </div>
         </div>
@@ -138,10 +145,14 @@ export default function App() {
               </div>
               <div className="aspect-[2/1]">
                 {cubeState && (
-                  <RubiksCubeCSS
-                    cubeState={cubeState}
-                    size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : puzzleType === '5x5' ? 5 : puzzleType === '6x6' ? 6 : puzzleType === '7x7' ? 7 : 3}
-                  />
+                  puzzleType === 'Megaminx' ? (
+                    <Megaminx3D cubeState={cubeState} />
+                  ) : (
+                    <RubiksCubeCSS
+                      cubeState={cubeState}
+                      size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : puzzleType === '5x5' ? 5 : puzzleType === '6x6' ? 6 : puzzleType === '7x7' ? 7 : 3}
+                    />
+                  )
                 )}
               </div>
               <div className="mt-2 text-xs text-gray-400 text-center">
