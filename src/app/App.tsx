@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import RubiksCube3D from './components/RubiksCube3D';
 import Megaminx3D from './components/Megaminx3D';
+import { ManualScrambleDialog } from './components/ManualScrambleDialog';
 import Timer from './components/Timer';
 import Statistics from './components/Statistics';
 import { generateScramble, applyScramble } from './utils/cubeLogic';
@@ -19,6 +20,31 @@ export default function App() {
   const [scramble, setScramble] = useState('');
   const [cubeState, setCubeState] = useState<CubeState | null>(null);
   const [records, setRecords] = useState<TimeRecord[]>([]);
+
+  // 应用手动输入的打乱公式
+  const handleManualScrambleApply = (manualScramble: string) => {
+    if (!manualScramble) return;
+    
+    // 关键修复：预处理字符串，将所有空白字符（空格、换行、Tab）统一替换为单空格
+    const cleanScramble = manualScramble.trim().split(/\s+/).join(' ');
+
+    setScramble(cleanScramble);
+    if (puzzleType === '2x2') {
+      setCubeState(applyScramble2x2(cleanScramble));
+    } else if (puzzleType === '4x4') {
+      setCubeState(applyScramble4x4(cleanScramble));
+    } else if (puzzleType === '5x5') {
+      setCubeState(applyScramble5x5(cleanScramble));
+    } else if (puzzleType === '6x6') {
+      setCubeState(applyScramble6x6(cleanScramble));
+    } else if (puzzleType === '7x7') {
+      setCubeState(applyScramble7x7(cleanScramble));
+    } else if (puzzleType === 'Megaminx') {
+      setCubeState(applyScrambleMegaminx(cleanScramble));
+    } else {
+      setCubeState(applyScramble(cleanScramble));
+    }
+  };
 
   // 生成新的打乱公式
   const generateNewScramble = (type: PuzzleType = puzzleType) => {
@@ -135,13 +161,19 @@ export default function App() {
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex justify-between items-center mb-3">
                 <h2 className="text-base font-semibold">魔方预览</h2>
-                <button
-                  onClick={() => generateNewScramble()}
-                  className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 rounded transition-colors text-xs"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>新打乱</span>
-                </button>
+                <div className="flex gap-2">
+                  <ManualScrambleDialog
+                    onApply={handleManualScrambleApply}
+                    puzzleType={puzzleType}
+                  />
+                  <button
+                    onClick={() => generateNewScramble()}
+                    className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 rounded transition-colors text-xs"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>新打乱</span>
+                  </button>
+                </div>
               </div>
               <div className="aspect-[2/1]">
                 {cubeState && (

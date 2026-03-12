@@ -76,6 +76,11 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
   }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // 关键修复：如果焦点在输入框或文本域中，直接退出，不干扰输入
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      return;
+    }
+
     if (e.code !== 'Space') return;
     e.preventDefault();
     if (spacePressed) return;
@@ -99,6 +104,10 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
   }, [state, spacePressed, startInspection]);
 
   const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      return;
+    }
+
     if (e.code !== 'Space') return;
     e.preventDefault();
     setSpacePressed(false);
