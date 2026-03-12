@@ -31,20 +31,30 @@ export function generateScramble4x4(length: number = 40): string {
   const modifiers = ['', "'", '2'];
   const scramble: string[] = [];
   let lastFace = '';
-
+  
   for (let i = 0; i < length; i++) {
     let base: string;
-    let move: string;
     let face: string;
     do {
       base = allMoves[Math.floor(Math.random() * allMoves.length)];
-      const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
-      move = base + modifier;
-      face = base[0];
-    } while (face === lastFace || face === OPPOSITE_FACE[lastFace]);
+      // 获取核心面字母，例如 '3Uw' -> 'U', 'Dw' -> 'D', 'U' -> 'U'
+      face = base.includes('U') ? 'U' : 
+             base.includes('D') ? 'D' : 
+             base.includes('L') ? 'L' : 
+             base.includes('R') ? 'R' : 
+             base.includes('F') ? 'F' : 'B';
+      
+      // 极致规则：下一个动作必须切换轴向
+      // 如果当前面是 U 或 D，上一个面绝对不能是 U 或 D
+    } while (
+      face === lastFace || 
+      face === OPPOSITE_FACE[lastFace]
+    );
 
-    scramble.push(move);
-    lastFace = base[0];
+    const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+    scramble.push(base + modifier);
+    
+    lastFace = face;
   }
 
   return scramble.join(' ');

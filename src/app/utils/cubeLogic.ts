@@ -19,18 +19,31 @@ export function generateScramble(length: number = 20): string {
   const moves: Move[] = ['U', 'D', 'F', 'B', 'L', 'R'];
   const modifiers = ['', "'", '2'];
   const scramble: string[] = [];
-  let lastMove = '';
+  
+  // 相对面映射
+  const oppositeFace: Record<string, string> = {
+    'U': 'D', 'D': 'U',
+    'L': 'R', 'R': 'L',
+    'F': 'B', 'B': 'F'
+  };
+
+  let lastFace = '';
 
   for (let i = 0; i < length; i++) {
-    let move: string;
+    let face: string;
     do {
-      const baseMove = moves[Math.floor(Math.random() * moves.length)];
-      const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
-      move = baseMove + modifier;
-    } while (move[0] === lastMove[0]); // 避免连续相同面的转动
+      face = moves[Math.floor(Math.random() * moves.length)];
+      
+      // 极致规则：禁止同一个面，且禁止相对面（必须切换轴向）
+    } while (
+      face === lastFace || 
+      face === oppositeFace[lastFace]
+    );
 
-    scramble.push(move);
-    lastMove = move;
+    const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+    scramble.push(face + modifier as Move);
+    
+    lastFace = face;
   }
 
   return scramble.join(' ');

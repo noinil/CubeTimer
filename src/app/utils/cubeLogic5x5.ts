@@ -38,28 +38,26 @@ export function generateScramble5x5(length: number = 60): string {
   const modifiers = ['', "'", '2'];
   const scramble: string[] = [];
   let lastFace = '';
-  let lastLayer = 0;
-
+  
   for (let i = 0; i < length; i++) {
     let base: string;
-    let move: string;
     let face: string;
-    let layer: number;
     do {
       base = allMoves[Math.floor(Math.random() * allMoves.length)];
-      const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
-      move = base + modifier;
-      const parsed = parseFaceLayer(base);
-      face = parsed.face;
-      layer = parsed.layer;
+      face = base.includes('U') ? 'U' : 
+             base.includes('D') ? 'D' : 
+             base.includes('L') ? 'L' : 
+             base.includes('R') ? 'R' : 
+             base.includes('F') ? 'F' : 'B';
     } while (
-      (face === lastFace && layer === lastLayer) ||
-      (face === OPPOSITE_FACE[lastFace] && layer === lastLayer)
+      face === lastFace || 
+      face === OPPOSITE_FACE[lastFace]
     );
 
-    scramble.push(move);
+    const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+    scramble.push(base + modifier);
+    
     lastFace = face;
-    lastLayer = layer;
   }
 
   return scramble.join(' ');
