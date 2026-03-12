@@ -9,6 +9,7 @@ interface RubiksCube3DProps {
   size?: number;
 }
 
+// Separate component for lights that follow the camera (Headlamp mode)
 function CameraLights() {
   const { camera } = useThree();
   const lightRef = useRef<THREE.DirectionalLight>(null);
@@ -24,24 +25,46 @@ function CameraLights() {
   );
 }
 
+// Function to create a rounded rectangle geometry for stickers
+function createRoundedRectGeometry(w: number, h: number, r: number, segments: number = 8) {
+  const shape = new THREE.Shape();
+  shape.moveTo(-w/2 + r, -h/2);
+  shape.lineTo(w/2 - r, -h/2);
+  shape.absarc(w/2 - r, -h/2 + r, r, -Math.PI/2, 0, false);
+  shape.lineTo(w/2, h/2 - r);
+  shape.absarc(w/2 - r, h/2 - r, r, 0, Math.PI/2, false);
+  shape.lineTo(-w/2 + r, h/2);
+  shape.absarc(-w/2 + r, h/2 - r, r, Math.PI/2, Math.PI, false);
+  shape.lineTo(-w/2, -h/2 + r);
+  shape.absarc(-w/2 + r, -h/2 + r, r, Math.PI, -Math.PI/2, false);
+  return new THREE.ShapeGeometry(shape, segments);
+}
+
 function Cubie({ position, colors }: { position: [number, number, number]; colors: string[] }) {
+  // Use a shared geometry for performance - increased rounding radius to 0.25
+  const stickerGeom = useMemo(() => createRoundedRectGeometry(0.82, 0.82, 0.25), []);
+
   return (
     <group position={position}>
+      {/* The black plastic body of the cubie */}
       <mesh>
         <boxGeometry args={[0.98, 0.98, 0.98]} />
         <meshStandardMaterial color="#050505" roughness={0.8} />
       </mesh>
+      
+      {/* The 6 faces/stickers */}
       {colors.map((color, index) => {
         if (!color) return null;
+        
         const pos: [number, number, number][] = [
           [0, 0.5, 0], [0, -0.5, 0], [0, 0, 0.5], [0, 0, -0.5], [-0.5, 0, 0], [0.5, 0, 0]
         ];
         const rot: [number, number, number][] = [
           [-Math.PI / 2, 0, 0], [Math.PI / 2, 0, 0], [0, 0, 0], [0, Math.PI, 0], [0, -Math.PI / 2, 0], [0, Math.PI / 2, 0]
         ];
+
         return (
-          <mesh key={index} position={pos[index]} rotation={rot[index]}>
-            <planeGeometry args={[0.88, 0.88]} />
+          <mesh key={index} position={pos[index]} rotation={rot[index]} geometry={stickerGeom}>
             <meshStandardMaterial 
               color={color} 
               emissive={color}
