@@ -10,17 +10,17 @@ export const permDMinus = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
 
 const colors = [
   '#FFFFFF', // 0: U
-  '#00FF00', // 1: F
-  '#FF3333', // 2: R
-  '#3333FF', // 3: BR
-  '#FFFF00', // 4: BL
-  '#C040FF', // 5: L (Bright Purple)
-  '#00FF80', // 6: dF
-  '#FF8000', // 7: dR
-  '#00FFFF', // 8: dBR
-  '#FFD700', // 9: dBL
-  '#FFC0CB', // 10: dL
-  '#CCCCCC', // 11: D (Lighter Gray)
+  '#008000', // 1: F
+  '#FF0000', // 2: R
+  '#800080', // 3: L
+  '#000080', // 4: BR
+  '#FFFF00', // 5: BL
+  '#F5F5B0', // 6: dF
+  '#87CEEB', // 7: dL
+  '#FFC0CB', // 8: dR
+  '#FF8C00', // 9: dBL
+  '#90EE90', // 10: dBR
+  '#808080', // 11: D
 ];
 
 export function createSolvedMegaminx() {
