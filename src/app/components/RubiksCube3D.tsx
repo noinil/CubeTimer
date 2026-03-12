@@ -1,29 +1,75 @@
-import { useRef, useMemo, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { useRef, useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { TrackballControls } from '@react-three/drei';
 import type { CubeState } from '../types/cube';
 import * as THREE from 'three';
 
 interface RubiksCube3DProps {
   cubeState: CubeState;
+  size?: number;
 }
 
-// 单个小方块组件
-function Cubie({ position, colors }: { position: [number, number, number]; colors: string[] }) {
+// Helper to create rounded box geometry for cubies
+function createCubieGeometry(size: number = 0.95, radius: number = 0.1, smoothness: number = 8) {
+  const shape = new THREE.Shape();
+  const eps = 0.0001;
+  const halfSize = size / 2;
+  const r = Math.min(radius, halfSize - eps);
+  
+  // Create a rounded square shape for extrusion
+  shape.moveTo(-halfSize + r, -halfSize);
+  shape.lineTo(halfSize - r, -halfSize);
+  shape.absarc(halfSize - r, -halfSize + r, r, -Math.PI / 2, 0, false);
+  shape.lineTo(halfSize, halfSize - r);
+  shape.absarc(halfSize - r, halfSize - r, r, 0, Math.PI / 2, false);
+  shape.lineTo(-halfSize + r, halfSize);
+  shape.absarc(-halfSize + r, halfSize - r, r, Math.PI / 2, Math.PI, false);
+  shape.lineTo(-halfSize, -halfSize + r);
+  shape.absarc(-halfSize + r, -halfSize + r, r, Math.PI, -Math.PI / 2, false);
+
+  return new THREE.ExtrudeGeometry(shape, {
+    depth: size,
+    bevelEnabled: false,
+    curveSegments: smoothness
+  });
+}
+
+function Cubie({ position, colors, size }: { position: [number, number, number]; colors: string[]; size: number }) {
+  // We use standard boxes for cubies but with colored planes as stickers to keep it performant and sharp
   return (
     <group position={position}>
+      {/* The black plastic body of the cubie */}
       <mesh>
-        <boxGeometry args={[0.95, 0.95, 0.95]} />
-        <meshStandardMaterial color="#1a1a1a" />
+        <boxGeometry args={[0.98, 0.98, 0.98]} />
+        <meshStandardMaterial color="#111111" roughness={0.5} />
       </mesh>
+      
+      {/* The 6 faces/stickers */}
       {colors.map((color, index) => {
         if (!color) return null;
-        const facePosition = getFacePosition(index);
-        const faceRotation = getFaceRotation(index);
+        
+        // Define sticker offset and rotation based on face index:
+        // 0:U(+Y), 1:D(-Y), 2:F(+Z), 3:B(-Z), 4:L(-X), 5:R(+X)
+        const pos: [number, number, number][] = [
+          [0, 0.5, 0], [0, -0.5, 0], [0, 0, 0.5], [0, 0, -0.5], [-0.5, 0, 0], [0.5, 0, 0]
+        ];
+        const rot: [number, number, number][] = [
+          [-Math.PI / 2, 0, 0], [Math.PI / 2, 0, 0], [0, 0, 0], [0, Math.PI, 0], [0, -Math.PI / 2, 0], [0, Math.PI / 2, 0]
+        ];
+
         return (
-          <mesh key={index} position={facePosition} rotation={faceRotation}>
-            <planeGeometry args={[0.85, 0.85]} />
-            <meshStandardMaterial color={color} />
+          <mesh key={index} position={pos[index]} rotation={rot[index]}>
+            {/* Slightly inset and rounded sticker */}
+            <planeGeometry args={[0.88, 0.88]} />
+            <meshStandardMaterial 
+              color={color} 
+              emissive={color}
+              emissiveIntensity={0.2}
+              roughness={0.1}
+              metalness={0.1}
+              polygonOffset
+              polygonOffsetFactor={-1} // Ensure sticker is always in front of black body
+            />
           </mesh>
         );
       })}
@@ -31,133 +77,80 @@ function Cubie({ position, colors }: { position: [number, number, number]; color
   );
 }
 
-function getFacePosition(index: number): [number, number, number] {
-  const positions: [number, number, number][] = [
-    [0, 0.48, 0],    // front
-    [0, -0.48, 0],   // back
-    [0, 0, 0.48],    // top
-    [0, 0, -0.48],   // bottom
-    [-0.48, 0, 0],   // left
-    [0.48, 0, 0],    // right
-  ];
-  return positions[index];
-}
-
-function getFaceRotation(index: number): [number, number, number] {
-  const rotations: [number, number, number][] = [
-    [0, 0, 0],                    // front
-    [0, Math.PI, 0],              // back
-    [-Math.PI / 2, 0, 0],         // top
-    [Math.PI / 2, 0, 0],          // bottom
-    [0, -Math.PI / 2, 0],         // left
-    [0, Math.PI / 2, 0],          // right
-  ];
-  return rotations[index];
-}
-
-// 完整的魔方
-function Cube({ cubeState }: { cubeState: CubeState }) {
+function CubeGroup({ cubeState, size }: { cubeState: CubeState; size: number }) {
   const groupRef = useRef<THREE.Group>(null);
 
-  // 轻微的自动旋转
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.002;
-    }
-  });
-
   const cubies = useMemo(() => {
+    if (!cubeState.faces) return [];
     const result = [];
-    for (let x = -1; x <= 1; x++) {
-      for (let y = -1; y <= 1; y++) {
-        for (let z = -1; z <= 1; z++) {
-          const colors = getCubieColors(x, y, z, cubeState);
-          result.push({
-            position: [x, y, z] as [number, number, number],
-            colors,
-            key: `${x}-${y}-${z}`,
-          });
+    const offset = (size - 1) / 2;
+
+    for (let x = 0; x < size; x++) {
+      for (let y = 0; y < size; y++) {
+        for (let z = 0; z < size; z++) {
+          // Only render the outer shell pieces
+          if (x === 0 || x === size - 1 || y === 0 || y === size - 1 || z === 0 || z === size - 1) {
+            const colors = getCubieColors(x, y, z, size, cubeState);
+            result.push({
+              position: [x - offset, y - offset, z - offset] as [number, number, number],
+              colors,
+              key: `${x}-${y}-${z}`,
+            });
+          }
         }
       }
     }
     return result;
-  }, [cubeState]);
+  }, [cubeState, size]);
 
   return (
     <group ref={groupRef}>
       {cubies.map(cubie => (
-        <Cubie key={cubie.key} position={cubie.position} colors={cubie.colors} />
+        <Cubie key={cubie.key} position={cubie.position} colors={cubie.colors} size={size} />
       ))}
     </group>
   );
 }
 
-// 获取每个小方块的颜色
-function getCubieColors(x: number, y: number, z: number, state: CubeState): string[] {
-  const colors = ['', '', '', '', '', '']; // front, back, top, bottom, left, right
+function getCubieColors(x: number, y: number, z: number, size: number, state: CubeState): string[] {
+  // Order: U, D, F, B, L, R
+  const colors = ['', '', '', '', '', ''];
+  if (!state.faces) return colors;
 
-  // Front face (z = 1)
-  if (z === 1) {
-    const index = (1 - y) * 3 + (x + 1);
-    colors[0] = state.faces.F[index];
-  }
-  
-  // Back face (z = -1)
-  if (z === -1) {
-    const index = (1 - y) * 3 + (1 - x);
-    colors[1] = state.faces.B[index];
-  }
-  
-  // Top face (y = 1)
-  if (y === 1) {
-    const index = (1 - z) * 3 + (x + 1);
-    colors[2] = state.faces.U[index];
-  }
-  
-  // Bottom face (y = -1)
-  if (y === -1) {
-    const index = (z + 1) * 3 + (x + 1);
-    colors[3] = state.faces.D[index];
-  }
-  
-  // Left face (x = -1)
-  if (x === -1) {
-    const index = (1 - y) * 3 + (1 - z);
-    colors[4] = state.faces.L[index];
-  }
-  
-  // Right face (x = 1)
-  if (x === 1) {
-    const index = (1 - y) * 3 + (z + 1);
-    colors[5] = state.faces.R[index];
-  }
+  // Top (U): y = size - 1
+  if (y === size - 1) colors[0] = state.faces.U[(size - 1 - z) * size + x];
+  // Bottom (D): y = 0
+  if (y === 0) colors[1] = state.faces.D[z * size + x];
+  // Front (F): z = size - 1
+  if (z === size - 1) colors[2] = state.faces.F[(size - 1 - y) * size + x];
+  // Back (B): z = 0
+  if (z === 0) colors[3] = state.faces.B[(size - 1 - y) * size + (size - 1 - x)];
+  // Left (L): x = 0
+  if (x === 0) colors[4] = state.faces.L[(size - 1 - y) * size + (size - 1 - z)];
+  // Right (R): x = size - 1
+  if (x === size - 1) colors[5] = state.faces.R[(size - 1 - y) * size + z];
 
   return colors;
 }
 
-export default function RubiksCube3D({ cubeState }: RubiksCube3DProps) {
+export default function RubiksCube3D({ cubeState, size = 3 }: RubiksCube3DProps) {
   return (
-    <div className="w-full h-full bg-gray-900 rounded-lg overflow-hidden">
-      <Suspense fallback={
-        <div className="w-full h-full flex items-center justify-center text-gray-400">
-          加载中...
-        </div>
-      }>
-        <Canvas 
-          camera={{ position: [5, 5, 5], fov: 50 }}
-          gl={{ antialias: true }}
-        >
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
-          <directionalLight position={[-10, -10, -5]} intensity={0.5} />
-          <Cube cubeState={cubeState} />
-          <OrbitControls 
-            enablePan={false}
-            minDistance={5}
-            maxDistance={10}
-          />
-        </Canvas>
-      </Suspense>
+    <div className="w-full h-full bg-gray-900 rounded-lg overflow-hidden relative cursor-grab active:cursor-grabbing">
+      <Canvas 
+        camera={{ position: [size * 2, size * 2, size * 2.5], fov: 45 }} 
+        gl={{ antialias: true }}
+      >
+        <color attach="background" args={['#111827']} />
+        <ambientLight intensity={1.5} />
+        <pointLight position={[20, 20, 20]} intensity={2} />
+        <pointLight position={[-20, -20, -20]} intensity={1} />
+        <CubeGroup cubeState={cubeState} size={size} />
+        <TrackballControls 
+          noPan={true}
+          dynamicDampingFactor={0.15}
+          rotateSpeed={4.0}
+        />
+      </Canvas>
     </div>
   );
 }

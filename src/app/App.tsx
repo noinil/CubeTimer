@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import RubiksCubeCSS from './components/RubiksCubeCSS';
+import RubiksCube3D from './components/RubiksCube3D';
 import Megaminx3D from './components/Megaminx3D';
 import Timer from './components/Timer';
 import Statistics from './components/Statistics';
@@ -148,7 +148,7 @@ export default function App() {
                   puzzleType === 'Megaminx' ? (
                     <Megaminx3D cubeState={cubeState} />
                   ) : (
-                    <RubiksCubeCSS
+                    <RubiksCube3D
                       cubeState={cubeState}
                       size={puzzleType === '2x2' ? 2 : puzzleType === '4x4' ? 4 : puzzleType === '5x5' ? 5 : puzzleType === '6x6' ? 6 : puzzleType === '7x7' ? 7 : 3}
                     />
