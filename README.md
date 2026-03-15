@@ -1,11 +1,25 @@
-# 🧩 CubeTimer v1.0
+# 🧩 CubeTimer v1.1.0
 
 [![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-r183-black?style=for-the-badge&logo=three.js)](https://threejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/Live-Demo-orange?style=for-the-badge&logo=github)](https://YOUR_USERNAME.github.io/CubeTimer/)
 
-A high-performance, visually stunning **Professional 3D Cube Timer**. Powered by WebGL, featuring an industrial-grade aesthetic, full support for 2x2–7x7 cubes, and WCA-standard Megaminx.
+A high-performance, visually stunning **Professional 3D Cube Timer**. Powered by WebGL, featuring an industrial-grade aesthetic, millisecond-level precision, and full support for 2x2–7x7 cubes plus WCA-standard Megaminx.
+
+---
+
+## 🆕 What's New in v1.1.0
+
+### ⏱️ Professional-Grade Precision
+- **Millisecond Accuracy**: Upgraded timer precision from 0.01s to **0.001s**.
+- **High-Performance Timing**: Switched to `performance.now()` for microsecond-level clock accuracy, ensuring timing remains precise even under heavy CPU load.
+- **Ultra-Smooth Display**: Boosted UI refresh rate to 1ms during active timing for a fluid, professional visual experience.
+
+### 🌐 Global Accessibility & UX
+- **Full English UI**: The entire interface has been translated to English for a more seamless international user experience.
+- **Smart State Reset**: Integrated intelligent component re-mounting (via React `key` logic) when switching puzzle types, ensuring a clean slate with no display residue.
+- **Enhanced Connectivity**: Added quick-access links to the GitHub repository and developer's portfolio directly in the header.
 
 ---
 
@@ -52,14 +66,14 @@ npm run dev
 
 | Action | Shortcut / Method |
 | :--- | :--- |
-| **Start Inspection** | Press & Release Spacebar once |
+| **Start Inspection** | Press Spacebar once |
 | **Prepare Timer** | Press & **Hold** Spacebar (during inspection) |
 | **Start Timing** | **Release** Spacebar (when display turns green) |
 | **Stop Timing** | Press Spacebar again |
 | **Free Rotate** | Left-click and drag |
 | **Zoom In/Out** | Mouse wheel |
 | **New Scramble** | Click the "New Scramble" button |
-| **Custom Formula** | Click the "Keyboard" icon for manual input |
+| **Custom Formula** | Click the "Manual Scramble" button for input |
 
 ---
 

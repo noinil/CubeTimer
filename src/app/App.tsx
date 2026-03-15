@@ -16,7 +16,7 @@ import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
 import { RotateCcw, Github, Globe, Tag } from 'lucide-react';
 
 export default function App() {
-  const version = "1.0.0";
+  const version = "1.1.0";
   const [puzzleType, setPuzzleType] = useState<PuzzleType>('3x3');
   const [scramble, setScramble] = useState('');
   const [cubeState, setCubeState] = useState<CubeState | null>(null);
