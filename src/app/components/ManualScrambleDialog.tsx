@@ -10,60 +10,59 @@ import {
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { Keyboard } from "lucide-react";
+import type { PuzzleType } from '../types/cube';
 
 interface ManualScrambleDialogProps {
   onApply: (scramble: string) => void;
-  puzzleType: string;
+  puzzleType: PuzzleType;
 }
 
 export function ManualScrambleDialog({ onApply, puzzleType }: ManualScrambleDialogProps) {
-  const [input, setInput] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
 
   const handleApply = () => {
-    onApply(input.trim());
-    setIsOpen(false);
-    setInput('');
+    onApply(value);
+    setOpen(false);
+    setValue("");
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
-          className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors text-xs"
-        >
+        <button className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors text-xs text-gray-300">
           <Keyboard className="w-3.5 h-3.5" />
-          <span>手动输入</span>
+          <span>Manual Scramble</span>
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] bg-gray-800 text-white border-gray-700">
+      <DialogContent className="sm:max-w-[500px] bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
-          <DialogTitle>手动输入打乱公式 ({puzzleType})</DialogTitle>
+          <DialogTitle>Manual Scramble Entry ({puzzleType})</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <p className="text-xs text-gray-400">
-            请输入符合该魔方类型的标准打乱字符串。支持多行粘贴。
+        <div className="py-4">
+          <p className="text-sm text-gray-400 mb-3">
+            Please enter a standard scramble string for this puzzle type. Multi-line paste is supported.
           </p>
           <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="在此粘贴或输入公式..."
-            className="min-h-[150px] bg-gray-900 border-gray-700 text-white placeholder:text-gray-600"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Paste or enter scramble here..."
+            className="min-h-[120px] bg-gray-900 border-gray-700 focus:ring-blue-500 text-white font-mono"
           />
         </div>
-        <DialogFooter>
-          <Button 
-            variant="outline" 
-            onClick={() => setIsOpen(false)}
-            className="border-gray-600 hover:bg-gray-700 text-gray-300"
+        <DialogFooter className="flex gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => setOpen(false)}
+            className="text-gray-400 hover:text-white hover:bg-gray-700"
           >
-            取消
+            Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleApply}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >
-            应用并预览
+            Apply & Preview
           </Button>
         </DialogFooter>
       </DialogContent>

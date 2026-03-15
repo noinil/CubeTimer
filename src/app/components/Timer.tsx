@@ -168,41 +168,41 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
 
   return (
     <div className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center space-y-4">
-      {/* 打乱公式 */}
+      {/* Scramble */}
       <div className="text-center w-full">
-        <div className="text-xs text-gray-400 mb-1">打乱公式</div>
+        <div className="text-xs text-gray-400 mb-1">Scramble</div>
         <div className="text-base font-mono text-white px-4 py-2 bg-gray-700 rounded">
           {scramble}
         </div>
       </div>
 
-      {/* 计时器显示 */}
+      {/* Timer Display */}
       <div className={`text-8xl font-bold tabular-nums ${getDisplayColor()} transition-colors`}>
         {getDisplayValue()}
       </div>
 
-      {/* 状态指示 */}
+      {/* Status Indicators */}
       <div className="flex items-center space-x-4 text-sm text-gray-400">
         {state === 'idle' && (
           <div className="flex items-center space-x-2">
             <Play className="w-4 h-4" />
-            <span>按空格键开始观察</span>
+            <span>Press Space to Start Inspection</span>
           </div>
         )}
         {state === 'inspection' && (
           <div className="flex items-center space-x-2 text-red-400">
-            <span>观察中，长按空格键准备计时</span>
+            <span>Inspecting, Hold Space to Ready</span>
           </div>
         )}
         {state === 'ready' && (
           <div className="flex items-center space-x-2 text-green-400">
-            <span>松开空格键开始！</span>
+            <span>Release Space to Start!</span>
           </div>
         )}
         {state === 'running' && (
           <div className="flex items-center space-x-2 text-blue-400">
             <Pause className="w-4 h-4" />
-            <span>按空格键停止</span>
+            <span>Press Space to Stop</span>
           </div>
         )}
         {state === 'stopped' && (
@@ -211,15 +211,15 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
             className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>重新开始</span>
+            <span>Reset</span>
           </button>
         )}
       </div>
 
-      {/* 键盘提示 */}
+      {/* Keyboard Hint */}
       <div className="text-xs text-gray-500">
         <div className="bg-gray-700 px-3 py-1 rounded inline-block">
-          空格键控制计时
+          Space to control timer
         </div>
       </div>
     </div>

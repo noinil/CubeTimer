@@ -53,9 +53,9 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
     const validRecords = records.filter(r => !r.dnf);
     const times = validRecords.map(r => r.time + (r.plus2 ? 2000 : 0));
 
-    const best = Math.min(...times);
-    const worst = Math.max(...times);
-    const average = times.reduce((a, b) => a + b, 0) / times.length;
+    const best = times.length > 0 ? Math.min(...times) : 0;
+    const worst = times.length > 0 ? Math.max(...times) : 0;
+    const average = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
     
     // Average of 5 (去掉最好和最差)
     let avg5 = 0;
@@ -127,23 +127,23 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
 
   return (
     <div className="space-y-4">
-      {/* 统计卡片 */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <StatCard
           icon={<Award className="w-5 h-5" />}
-          label="最佳"
+          label="Best"
           value={stats.best > 0 ? formatTime(stats.best) : '-'}
           color="text-green-400"
         />
         <StatCard
           icon={<TrendingDown className="w-5 h-5" />}
-          label="最差"
+          label="Worst"
           value={stats.worst > 0 ? formatTime(stats.worst) : '-'}
           color="text-red-400"
         />
         <StatCard
           icon={<Clock className="w-5 h-5" />}
-          label="平均"
+          label="Average"
           value={stats.average > 0 ? formatTime(stats.average) : '-'}
           color="text-blue-400"
         />
@@ -161,17 +161,17 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
         />
         <StatCard
           icon={<Clock className="w-5 h-5" />}
-          label="总计"
+          label="Total"
           value={stats.total.toString()}
           color="text-gray-400"
         />
       </div>
 
-      {/* 图表 */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Histogram */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-base font-semibold text-white mb-3">时间分布</h3>
+          <h3 className="text-base font-semibold text-white mb-3">Time Distribution</h3>
           {histogramData.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={histogramData}>
@@ -196,14 +196,14 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
             </ResponsiveContainer>
           ) : (
             <div className="h-[160px] flex items-center justify-center text-gray-500">
-              暂无数据
+              No Data
             </div>
           )}
         </div>
 
-        {/* 趋势图 */}
+        {/* Trend Chart */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-base font-semibold text-white mb-3">最近20次趋势</h3>
+          <h3 className="text-base font-semibold text-white mb-3">Recent 20 Solves Trend</h3>
           {trendData.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={trendData}>
@@ -212,17 +212,17 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
                   dataKey="solve" 
                   stroke="#9CA3AF"
                   fontSize={12}
-                  label={{ value: '次数', position: 'insideBottom', offset: -5, fill: '#9CA3AF' }}
+                  label={{ value: 'Solves', position: 'insideBottom', offset: -5, fill: '#9CA3AF' }}
                 />
                 <YAxis 
                   stroke="#9CA3AF" 
                   fontSize={12}
-                  label={{ value: '时间 (秒)', angle: -90, position: 'insideLeft', fill: '#9CA3AF' }}
+                  label={{ value: 'Time (s)', angle: -90, position: 'insideLeft', fill: '#9CA3AF' }}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
                   labelStyle={{ color: '#F3F4F6' }}
-                  formatter={(value: number) => [`${value.toFixed(3)}s`, '时间']}
+                  formatter={(value: number) => [`${value.toFixed(3)}s`, 'Time']}
                 />
                 <Line 
                   type="monotone" 
@@ -235,29 +235,29 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
             </ResponsiveContainer>
           ) : (
             <div className="h-[160px] flex items-center justify-center text-gray-500">
-              暂无数据
+              No Data
             </div>
           )}
         </div>
       </div>
 
-      {/* 记录表格 */}
+      {/* History Table */}
       <div className="bg-gray-800 rounded-lg p-4">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-base font-semibold text-white">计时记录</h3>
+          <h3 className="text-base font-semibold text-white">Session History</h3>
           {records.length > 0 && (
             <div className="flex items-center gap-4">
               <button
                 onClick={handleSaveRecords}
                 className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
               >
-                保存记录
+                Export Records
               </button>
               <button
                 onClick={onClearAll}
                 className="text-sm text-red-400 hover:text-red-300 transition-colors"
               >
-                清空所有记录
+                Clear History
               </button>
             </div>
           )}
@@ -265,7 +265,7 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
         
         {records.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
-            暂无记录，开始你的第一次计时吧！
+            No records yet. Start your first solve!
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -273,11 +273,11 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
               <thead>
                 <tr className="text-left text-sm text-gray-400 border-b border-gray-700">
                   <th className="pb-3 pr-4">#</th>
-                  <th className="pb-3 pr-4">时间</th>
+                  <th className="pb-3 pr-4">Time</th>
                   <th className="pb-3 pr-4 text-purple-400">Ao5</th>
                   <th className="pb-3 pr-4 text-yellow-400">Ao12</th>
-                  <th className="pb-3 pr-4">打乱公式</th>
-                  <th className="pb-3 pr-4">日期</th>
+                  <th className="pb-3 pr-4">Scramble</th>
+                  <th className="pb-3 pr-4">Date</th>
                   <th className="pb-3"></th>
                 </tr>
               </thead>

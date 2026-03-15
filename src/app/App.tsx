@@ -83,7 +83,7 @@ export default function App() {
   // 切换阶数：询问是否保存，然后无论如何清空所有记录
   const handlePuzzleTypeChange = (type: PuzzleType) => {
     if (records.length > 0) {
-      const shouldSave = confirm(`切换前是否保存当前 ${puzzleType} 的计时记录？`);
+      const shouldSave = confirm(`Do you want to save the current ${puzzleType} records before switching?`);
       if (shouldSave) exportRecords(records, puzzleType);
     }
     clearAllRecords();
@@ -125,7 +125,7 @@ export default function App() {
 
   // 清空所有记录
   const handleClearAll = () => {
-    if (confirm('确定要清空所有记录吗？')) {
+    if (confirm('Are you sure you want to clear all records?')) {
       clearAllRecords();
       setRecords([]);
     }
@@ -192,7 +192,7 @@ export default function App() {
           <div className="lg:col-span-1">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="flex justify-between items-center mb-3">
-                <h2 className="text-base font-semibold">魔方预览</h2>
+                <h2 className="text-base font-semibold">Cube Preview</h2>
                 <div className="flex gap-2">
                   <ManualScrambleDialog
                     onApply={handleManualScrambleApply}
@@ -203,7 +203,7 @@ export default function App() {
                     className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 rounded transition-colors text-xs"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    <span>新打乱</span>
+                    <span>New Scramble</span>
                   </button>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function App() {
                 )}
               </div>
               <div className="mt-2 text-xs text-gray-400 text-center">
-                拖动旋转 • 滚轮缩放
+                Drag to Rotate • Scroll to Zoom
               </div>
             </div>
           </div>
