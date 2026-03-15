@@ -196,6 +196,7 @@ export default function App() {
           {/* 右侧：计时器 */}
           <div className="lg:col-span-2">
             <Timer
+              key={puzzleType}
               scramble={scramble}
               onTimeRecorded={handleTimeRecorded}
             />

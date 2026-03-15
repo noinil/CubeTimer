@@ -30,11 +30,11 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    const milliseconds = Math.floor((ms % 1000) / 10);
+    const milliseconds = Math.floor(ms % 1000);
     if (minutes > 0) {
-      return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
     }
-    return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
+    return `${seconds}.${milliseconds.toString().padStart(3, '0')}`;
   };
 
   // 计算统计数据
@@ -222,7 +222,7 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
                   labelStyle={{ color: '#F3F4F6' }}
-                  formatter={(value: number) => [`${value.toFixed(2)}s`, '时间']}
+                  formatter={(value: number) => [`${value.toFixed(3)}s`, '时间']}
                 />
                 <Line 
                   type="monotone" 

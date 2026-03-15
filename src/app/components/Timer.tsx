@@ -48,11 +48,11 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    const milliseconds = Math.floor((ms % 1000) / 10);
+    const milliseconds = Math.floor(ms % 1000);
     if (minutes > 0) {
-      return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
     }
-    return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
+    return `${seconds}.${milliseconds.toString().padStart(3, '0')}`;
   };
 
   const startInspection = useCallback(() => {
@@ -60,10 +60,10 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     setInspectionLeft(INSPECTION_SECONDS);
     setState('inspection');
 
-    const inspectionStart = Date.now();
+    const inspectionStart = performance.now();
 
     inspectionIntervalRef.current = setInterval(() => {
-      const left = Math.max(0, Math.ceil((INSPECTION_SECONDS * 1000 - (Date.now() - inspectionStart)) / 1000));
+      const left = Math.max(0, Math.ceil((INSPECTION_SECONDS * 1000 - (performance.now() - inspectionStart)) / 1000));
       setInspectionLeft(left);
     }, 100);
 
@@ -95,7 +95,7 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
       }, 300);
     } else if (state === 'running') {
       // 停止计时
-      const finalTime = Date.now() - startTimeRef.current;
+      const finalTime = performance.now() - startTimeRef.current;
       clearRunning();
       setDisplayTime(finalTime);
       setState('stopped');
@@ -120,14 +120,14 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     if (state === 'ready') {
       // 清除观察计时器，开始正式计时
       clearInspection();
-      const now = Date.now();
+      const now = performance.now();
       startTimeRef.current = now;
       setDisplayTime(0);
       setState('running');
 
       runningIntervalRef.current = setInterval(() => {
-        setDisplayTime(Date.now() - startTimeRef.current);
-      }, 10);
+        setDisplayTime(performance.now() - startTimeRef.current);
+      }, 1);
     }
   }, [state]);
 
