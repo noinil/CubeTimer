@@ -17,7 +17,7 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
   const [isDnf, setIsDnf] = useState(false);
   const [spacePressed, setSpacePressed] = useState(false);
 
-  // 用 ref 管理所有计时器，避免闭包问题
+  // Use refs for all timers to avoid closure issues
   const readyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inspectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inspectionExpireRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -35,7 +35,7 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     if (runningIntervalRef.current) { clearInterval(runningIntervalRef.current); runningIntervalRef.current = null; }
   };
 
-  // 卸载时清理所有计时器
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       clearInspection();
@@ -75,50 +75,35 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     }, INSPECTION_SECONDS * 1000);
   }, []);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // 关键修复：如果焦点在输入框或文本域中，直接退出，不干扰输入
-    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
-      return;
-    }
-
-    if (e.code !== 'Space') return;
-    e.preventDefault();
-    if (spacePressed) return;
-    setSpacePressed(true);
-
+  // Unified trigger for both Spacebar and Touch/Click
+  const handleTriggerDown = useCallback(() => {
     if (state === 'idle' || state === 'stopped') {
       startInspection();
     } else if (state === 'inspection') {
-      // 长按 300ms 进入 ready
-      readyTimeoutRef.current = setTimeout(() => {
-        setState('ready');
-      }, 300);
+      // Long press 300ms to ready
+      if (!readyTimeoutRef.current) {
+        readyTimeoutRef.current = setTimeout(() => {
+          setState('ready');
+        }, 300);
+      }
     } else if (state === 'running') {
-      // 停止计时
+      // Stop timing
       const finalTime = performance.now() - startTimeRef.current;
       clearRunning();
       setDisplayTime(finalTime);
       setState('stopped');
       onTimeRecordedRef.current(finalTime);
     }
-  }, [state, spacePressed, startInspection]);
+  }, [state, startInspection]);
 
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
-    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
-      return;
-    }
-
-    if (e.code !== 'Space') return;
-    e.preventDefault();
-    setSpacePressed(false);
-
+  const handleTriggerUp = useCallback(() => {
     if (readyTimeoutRef.current) {
       clearTimeout(readyTimeoutRef.current);
       readyTimeoutRef.current = null;
     }
 
     if (state === 'ready') {
-      // 清除观察计时器，开始正式计时
+      // Clear inspection and start formal timing
       clearInspection();
       const now = performance.now();
       startTimeRef.current = now;
@@ -131,6 +116,29 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     }
   }, [state]);
 
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      return;
+    }
+
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    if (spacePressed) return;
+    setSpacePressed(true);
+    handleTriggerDown();
+  }, [spacePressed, handleTriggerDown]);
+
+  const handleKeyUp = useCallback((e: KeyboardEvent) => {
+    if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+      return;
+    }
+
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    setSpacePressed(false);
+    handleTriggerUp();
+  }, [handleTriggerUp]);
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -140,7 +148,8 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  const handleReset = () => {
+  const handleReset = (e?: React.MouseEvent) => {
+    e?.stopPropagation(); // Prevent triggering the parent container's click
     clearInspection();
     clearRunning();
     setIsDnf(false);
@@ -167,9 +176,20 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
   };
 
   return (
-    <div className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center space-y-4">
+    <div 
+      className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center space-y-4 touch-none select-none cursor-pointer active:bg-gray-750 transition-colors"
+      onPointerDown={(e) => {
+        // Only trigger on left click or touch
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        handleTriggerDown();
+      }}
+      onPointerUp={(e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        handleTriggerUp();
+      }}
+    >
       {/* Scramble */}
-      <div className="text-center w-full">
+      <div className="text-center w-full pointer-events-none">
         <div className="text-xs text-gray-400 mb-1">Scramble</div>
         <div className="text-base font-mono text-white px-4 py-2 bg-gray-700 rounded">
           {scramble}
@@ -177,38 +197,38 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
       </div>
 
       {/* Timer Display */}
-      <div className={`text-8xl font-bold tabular-nums ${getDisplayColor()} transition-colors`}>
+      <div className={`text-8xl font-bold tabular-nums ${getDisplayColor()} transition-colors pointer-events-none`}>
         {getDisplayValue()}
       </div>
 
       {/* Status Indicators */}
-      <div className="flex items-center space-x-4 text-sm text-gray-400">
+      <div className="flex items-center space-x-4 text-sm text-gray-400 pointer-events-none">
         {state === 'idle' && (
           <div className="flex items-center space-x-2">
             <Play className="w-4 h-4" />
-            <span>Press Space to Start Inspection</span>
+            <span>Tap or Space to Start Inspection</span>
           </div>
         )}
         {state === 'inspection' && (
           <div className="flex items-center space-x-2 text-red-400">
-            <span>Inspecting, Hold Space to Ready</span>
+            <span>Inspecting, Hold to Ready</span>
           </div>
         )}
         {state === 'ready' && (
           <div className="flex items-center space-x-2 text-green-400">
-            <span>Release Space to Start!</span>
+            <span>Release to Start!</span>
           </div>
         )}
         {state === 'running' && (
           <div className="flex items-center space-x-2 text-blue-400">
             <Pause className="w-4 h-4" />
-            <span>Press Space to Stop</span>
+            <span>Tap or Space to Stop</span>
           </div>
         )}
         {state === 'stopped' && (
           <button
             onClick={handleReset}
-            className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+            className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors pointer-events-auto"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Reset</span>
@@ -216,10 +236,10 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
         )}
       </div>
 
-      {/* Keyboard Hint */}
-      <div className="text-xs text-gray-500">
+      {/* Control Hint */}
+      <div className="text-xs text-gray-500 pointer-events-none">
         <div className="bg-gray-700 px-3 py-1 rounded inline-block">
-          Space to control timer
+          Tap screen or use Spacebar
         </div>
       </div>
     </div>

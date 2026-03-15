@@ -1,6 +1,14 @@
-# AGENT.md - Developer & AI Instructions for CubeTimer (v1.1.0)
+# AGENT.md - Developer & AI Instructions for CubeTimer (v1.2.0)
 
-This document provides essential context and coding standards for AI agents (Gemini-cli, Claude-code, etc.) working on this repository.
+This document provides essential context and coding standards for AI agents (Gemini, Claude, etc.) working on this repository.
+
+## 🆕 v1.2.0: Touch & Mobile Support
+- **Dual-Trigger Logic**: The timer now supports both Spacebar (Keyboard) and Pointer (Touch/Click).
+- **Pointer Events**: Use `onPointerDown` and `onPointerUp` on the main timer container. 
+- **Interaction Mapping**:
+  - `onPointerDown` maps to `keydown` (Start inspection / Long press for ready).
+  - `onPointerUp` maps to `keyup` (Release to start timing).
+- **CSS**: `touch-none` and `select-none` are applied to the timer to prevent gesture interference on mobile devices.
 
 ## 🛠️ Tech Stack & Environment
 - **Core**: React 19 (Functional Components + Hooks), TypeScript 5+, Vite 6.
@@ -38,6 +46,11 @@ This document provides essential context and coding standards for AI agents (Gem
 - `src/app/components/Timer.tsx`: The high-precision timing engine.
 - `src/app/components/RubiksCube3D.tsx`: Generic 3D renderer for all NxNxN cubes.
 - `src/app/utils/storage.ts`: Persistence layer (localStorage).
+
+## 🤖 AI Maintenance Rules (MANDATORY)
+1. **Sync Documentation**: After implementing any major feature or version bump (e.g., v1.x.x), you **MUST** update both `AGENT.md` and `README.md` to reflect the changes.
+2. **Version Alignment**: Ensure the version string in `src/app/App.tsx`, `README.md`, and `AGENT.md` are always perfectly aligned.
+3. **Single Source of Truth**: Only modify `AGENT.md`; the Git pre-commit hook will handle syncing to `GEMINI.md` and `CLAUDE.md`.
 
 ---
 *Note: This file is optimized for AI consumption. Keep it concise and updated with ogni version release.*

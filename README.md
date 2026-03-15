@@ -1,4 +1,4 @@
-# 🧩 CubeTimer v1.1.0
+# 🧩 CubeTimer v1.2.0
 
 [![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-r183-black?style=for-the-badge&logo=three.js)](https://threejs.org/)
@@ -9,35 +9,34 @@ A high-performance, visually stunning **Professional 3D Cube Timer**. Powered by
 
 ---
 
-## 🆕 What's New in v1.1.0
+## 🆕 What's New in v1.2.0
 
-### ⏱️ Professional-Grade Precision
-- **Millisecond Accuracy**: Upgraded timer precision from 0.01s to **0.001s**.
-- **High-Performance Timing**: Switched to `performance.now()` for microsecond-level clock accuracy, ensuring timing remains precise even under heavy CPU load.
-- **Ultra-Smooth Display**: Boosted UI refresh rate to 1ms during active timing for a fluid, professional visual experience.
+### 📱 Full Touch & Mobile Support
+- **Touchpad Experience**: The entire timer area is now a sensitive touch-pad. Perfect for iPad and mobile users.
+- **Physical Timer Emulation**: Mimics professional "Stackmat" timers. Long-press on the screen to ready (turns green), release to start timing.
+- **Gesture Protection**: Integrated `touch-none` CSS to prevent accidental scrolling or zooming during intense solves.
 
-### 🌐 Global Accessibility & UX
-- **Full English UI**: The entire interface has been translated to English for a more seamless international user experience.
-- **Smart State Reset**: Integrated intelligent component re-mounting (via React `key` logic) when switching puzzle types, ensuring a clean slate with no display residue.
-- **Enhanced Connectivity**: Added quick-access links to the GitHub repository and developer's portfolio directly in the header.
+### ⏱️ Professional-Grade Precision (v1.1.0+)
+- **Millisecond Accuracy**: Timer precision at **0.001s**.
+- **High-Performance Clock**: Powered by `performance.now()` for microsecond-level accuracy.
+
+### 🌐 Global Accessibility & UX (v1.1.0+)
+- **Full English UI**: Seamless international experience.
+- **Smart State Reset**: Components automatically reset when switching puzzle types.
 
 ---
 
 ## ✨ Core Features
 
 ### 🎨 Ultimate Visual Aesthetics
-- **Professional ABS Material**: Simulates the texture of premium speedcubes with high contrast and saturated color calibration.
-- **Extreme Rounded Design**: All puzzle stickers feature large Bézier rounded corners for a sleek, modern look.
-- **3D Physical Gaps**: Layered structure design accurately restores black plastic cut lines between pieces, preventing "sticker transparency."
-- **Headlamp Lighting System**: Intelligent follow-camera lighting ensures the front faces are always bright and clear regardless of rotation.
+- **Professional ABS Material**: Simulates the texture of premium speedcubes.
+- **Extreme Rounded Design**: All puzzle stickers feature large Bézier rounded corners.
+- **3D Physical Gaps**: Layered structure accurately restores black plastic cut lines.
 
 ### ⚙️ Hardcore Engineering
 - **Full 3D Coverage**: Supports 2x2, 3x3, 4x4, 5x5, 6x6, 7x7, and **Megaminx**.
-- **Efficient Scramble Algorithms**:
-  - **NxNxN Cubes**: Implements strict "Axis-Switching" logic to eliminate redundant parallel moves.
-  - **Megaminx**: Full implementation of the WCA-standard Pochmann (77-move) scramble.
-- **Trackball Free Rotation**: 360-degree unrestricted flipping with responsive dynamic damping.
-- **Manual Scramble Interface**: Input custom algorithms with multi-line paste support and instant 3D preview.
+- **WCA-Standard Scrambles**: Professional scramble algorithms for all puzzle types.
+- **Trackball Free Rotation**: 360-degree unrestricted flipping with dynamic damping.
 
 ---
 
@@ -50,7 +49,6 @@ cd CubeTimer
 ```
 
 ### 2. Install dependencies
-Since the project utilizes the React 19 ecosystem, please use the following flag:
 ```bash
 npm install --legacy-peer-deps
 ```
@@ -64,16 +62,16 @@ npm run dev
 
 ## 🎮 Usage Guide
 
-| Action | Shortcut / Method |
+| Action | Shortcut / Touch Method |
 | :--- | :--- |
-| **Start Inspection** | Press Spacebar once |
-| **Prepare Timer** | Press & **Hold** Spacebar (during inspection) |
-| **Start Timing** | **Release** Spacebar (when display turns green) |
-| **Stop Timing** | Press Spacebar again |
+| **Start Inspection** | Press Spacebar or **Tap Screen** |
+| **Prepare Timer** | Press & **Hold** Space/Screen (during inspection) |
+| **Start Timing** | **Release** Space/Finger (when display turns green) |
+| **Stop Timing** | Press Spacebar or **Tap Screen** again |
 | **Free Rotate** | Left-click and drag |
 | **Zoom In/Out** | Mouse wheel |
 | **New Scramble** | Click the "New Scramble" button |
-| **Custom Formula** | Click the "Manual Scramble" button for input |
+| **Manual Input** | Click the "Manual Scramble" button |
 
 ---
 
