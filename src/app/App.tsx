@@ -13,9 +13,10 @@ import { generateScramble7x7, applyScramble7x7 } from './utils/cubeLogic7x7';
 import { generateScrambleMegaminx, applyScrambleMegaminx } from './utils/cubeLogicMegaminx';
 import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords } from './utils/storage';
 import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Github, Globe, Tag } from 'lucide-react';
 
 export default function App() {
+  const version = "1.0.0";
   const [puzzleType, setPuzzleType] = useState<PuzzleType>('3x3');
   const [scramble, setScramble] = useState('');
   const [cubeState, setCubeState] = useState<CubeState | null>(null);
@@ -135,22 +136,53 @@ export default function App() {
       <div className="max-w-[1800px] mx-auto space-y-4">
         {/* 标题 */}
         <div className="text-center py-1">
-          <h1 className="text-2xl font-bold">魔方计时器</h1>
-          <div className="flex items-center justify-center gap-3 mt-1">
-            <p className="text-gray-400 text-sm">Rubik's Cube Timer</p>
-            <select
-              value={puzzleType}
-              onChange={(e) => handlePuzzleTypeChange(e.target.value as PuzzleType)}
-              className="bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600 cursor-pointer"
-            >
-              <option value="3x3">3×3</option>
-              <option value="2x2">2×2</option>
-              <option value="4x4">4×4</option>
-              <option value="5x5">5×5</option>
-              <option value="6x6">6×6</option>
-              <option value="7x7">7×7</option>
-              <option value="Megaminx">Megaminx</option>
-            </select>
+          <h1 className="text-2xl font-bold">CubeTimer</h1>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-1">
+            <div className="flex items-center gap-3">
+              <p className="text-gray-400 text-sm">Rubik's Cube Timer</p>
+              <select
+                value={puzzleType}
+                onChange={(e) => handlePuzzleTypeChange(e.target.value as PuzzleType)}
+                className="bg-gray-700 text-white text-sm rounded px-2 py-1 border border-gray-600 cursor-pointer hover:bg-gray-600 transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="3x3">3×3</option>
+                <option value="2x2">2×2</option>
+                <option value="4x4">4×4</option>
+                <option value="5x5">5×5</option>
+                <option value="6x6">6×6</option>
+                <option value="7x7">7×7</option>
+                <option value="Megaminx">Megaminx</option>
+              </select>
+            </div>
+
+            <div className="hidden xs:block border-l border-gray-700 h-4 mx-1"></div>
+
+            <div className="flex items-center gap-3">
+              <a 
+                href="https://github.com/noinil" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-xs group"
+                title="GitHub Repository"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">GitHub</span>
+              </a>
+              <a 
+                href="https://c-tan.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-xs group"
+                title="Personal Website"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Website</span>
+              </a>
+              <div className="flex items-center gap-1.5 text-gray-500 text-xs border-l border-gray-800 pl-3">
+                <Tag className="w-3.5 h-3.5" />
+                <span>v{version}</span>
+              </div>
+            </div>
           </div>
         </div>
 
