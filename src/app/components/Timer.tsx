@@ -231,7 +231,7 @@ export default function Timer({ onTimeRecorded, scramble }: TimerProps) {
             className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded transition-colors pointer-events-auto"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Reset</span>
+            <span>Start</span>
           </button>
         )}
       </div>
