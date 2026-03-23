@@ -11,12 +11,12 @@ import { generateScramble5x5, applyScramble5x5 } from './utils/cubeLogic5x5';
 import { generateScramble6x6, applyScramble6x6 } from './utils/cubeLogic6x6';
 import { generateScramble7x7, applyScramble7x7 } from './utils/cubeLogic7x7';
 import { generateScrambleMegaminx, applyScrambleMegaminx } from './utils/cubeLogicMegaminx';
-import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords } from './utils/storage';
+import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords, updateRecord } from './utils/storage';
 import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
 import { RotateCcw, Github, Globe, Tag } from 'lucide-react';
 
 export default function App() {
-  const version = "1.2.0";
+  const version = "1.2.1";
   const [puzzleType, setPuzzleType] = useState<PuzzleType>('3x3');
   const [scramble, setScramble] = useState('');
   const [cubeState, setCubeState] = useState<CubeState | null>(null);
@@ -115,6 +115,40 @@ export default function App() {
     setTimeout(() => {
       generateNewScramble();
     }, 1000);
+  };
+
+  // 标记最近一条记录为 DNF
+  const handleDnfLast = () => {
+    if (records.length === 0) return;
+    const lastRecord = records[0];
+    const newDnf = !lastRecord.dnf;
+    
+    // 1. 同步到本地存储
+    updateRecord(lastRecord.id, { dnf: newDnf });
+    
+    // 2. 更新 React 状态
+    setRecords(prev => {
+      const newRecords = [...prev];
+      newRecords[0] = { ...newRecords[0], dnf: newDnf };
+      return newRecords;
+    });
+  };
+
+  // 标记最近一条记录为 +2
+  const handlePlus2Last = () => {
+    if (records.length === 0) return;
+    const lastRecord = records[0];
+    const newPlus2 = !lastRecord.plus2;
+    
+    // 1. 同步到本地存储
+    updateRecord(lastRecord.id, { plus2: newPlus2 });
+    
+    // 2. 更新 React 状态
+    setRecords(prev => {
+      const newRecords = [...prev];
+      newRecords[0] = { ...newRecords[0], plus2: newPlus2 };
+      return newRecords;
+    });
   };
 
   // 删除记录
@@ -231,6 +265,8 @@ export default function App() {
               key={puzzleType}
               scramble={scramble}
               onTimeRecorded={handleTimeRecorded}
+              onDnfLast={handleDnfLast}
+              onPlus2Last={handlePlus2Last}
             />
           </div>
         </div>

@@ -294,10 +294,10 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
                   >
                     <td className="py-1.5 pr-4 text-gray-400">{index + 1}</td>
                     <td className="py-1.5 pr-4">
-                      <span className={`font-mono ${record.dnf ? 'text-red-400' : 'text-white'}`}>
-                        {record.dnf ? 'DNF' : formatTime(record.time)}
+                      <span className={`font-mono ${record.dnf ? 'text-red-400' : record.plus2 ? 'text-yellow-400' : 'text-white'}`}>
+                        {record.dnf ? 'DNF' : formatTime(record.time + (record.plus2 ? 2000 : 0))}
                         {record.plus2 && !record.dnf && (
-                          <span className="text-yellow-400 ml-1">+2</span>
+                          <span className="text-yellow-400 ml-1 text-xs">+2</span>
                         )}
                       </span>
                     </td>
