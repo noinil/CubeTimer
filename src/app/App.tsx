@@ -193,7 +193,7 @@ export default function App() {
 
             <div className="flex items-center gap-3">
               <a 
-                href="https://github.com/noinil" 
+                href="https://github.com/noinil/CubeTimer" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-xs group"
@@ -203,7 +203,7 @@ export default function App() {
                 <span className="hidden sm:inline">GitHub</span>
               </a>
               <a 
-                href="https://c-tan.com" 
+                href="https://c-tan.com/post/cubetimer-v1.2.1/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-xs group"
