@@ -49,3 +49,6 @@ coverage/
 .parcel-cache/
 .eslintcache
 .stylelintcache
+
+# Statistics
+./tool/*.json
