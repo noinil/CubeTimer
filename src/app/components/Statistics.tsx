@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine } from 'recharts';
 import { Trash2, Award, TrendingDown, TrendingUp, Clock } from 'lucide-react';
 import type { TimeRecord, PuzzleType, ExternalStats } from '../types/cube';
 import { exportRecords } from '../utils/storage';
@@ -281,6 +281,18 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
                     }}
                   />
                   <Bar dataKey="sessionCount" name="Session" fill="#3B82F6" fillOpacity={0.8} radius={[4, 4, 0, 0]} />
+                  {externalStats?.summary?.overall_mean != null && (
+                    <ReferenceLine x={externalStats.summary.overall_mean} stroke="#6B7280" strokeDasharray="4 4" strokeWidth={1.5}
+                      label={{ position: 'insideTop', value: 'Hist Avg', fill: '#6B7280', fontSize: 9 }} />
+                  )}
+                  {externalStats?.pb_ao5?.time != null && (
+                    <ReferenceLine x={externalStats.pb_ao5.time} stroke="#6D28D9" strokeDasharray="4 4" strokeWidth={1.5}
+                      label={{ position: 'insideTop', value: 'PB Ao5', fill: '#6D28D9', fontSize: 9 }} />
+                  )}
+                  {externalStats?.pb_ao12?.time != null && (
+                    <ReferenceLine x={externalStats.pb_ao12.time} stroke="#A16207" strokeDasharray="4 4" strokeWidth={1.5}
+                      label={{ position: 'insideTop', value: 'PB Ao12', fill: '#A16207', fontSize: 9 }} />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
               {/* 历史折线叠加层 — 完全独立的 LineChart，pointerEvents:none 不干扰 bar 的 tooltip */}

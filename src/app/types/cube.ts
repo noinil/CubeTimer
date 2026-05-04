@@ -15,15 +15,19 @@ export interface TimeRecord {
 export interface ExternalStats {
   summary?: {
     overall_mean_fmt?: string;
+    overall_mean?: number | null;
   };
   pb_single?: {
     time_fmt?: string;
+    time?: number | null;
   };
   pb_ao5?: {
     time_fmt?: string;
+    time?: number | null;
   };
   pb_ao12?: {
     time_fmt?: string;
+    time?: number | null;
   };
   histogram?: {
     bin_edges: number[];
