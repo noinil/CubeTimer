@@ -169,17 +169,21 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     return ticks;
   }, [combinedHistogramData, timeRange]);
 
-  // 计算左侧 Y 轴刻度
+  // 计算左侧 Y 轴刻度（动态 nice-number 步长，目标约 5 个 tick）
   const yAxisTicks = useMemo(() => {
     const sessionMax = Math.max(0, ...combinedHistogramData.map(d => d.sessionCount || 0));
-    const limit = sessionMax + 1;
+    if (sessionMax === 0) return [0];
+    const rawStep = sessionMax / 4;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const normalized = rawStep / magnitude;
+    const step = normalized <= 1 ? magnitude
+                : normalized <= 2 ? 2 * magnitude
+                : normalized <= 5 ? 5 * magnitude
+                : 10 * magnitude;
     const ticks = [];
-    if (limit <= 10) {
-      for (let i = 0; i <= limit; i++) ticks.push(i);
-    } else {
-      const step = Math.max(1, Math.ceil(limit / 6));
-      for (let i = 0; i <= limit; i += step) ticks.push(i);
-      if (ticks[ticks.length - 1] < limit) ticks.push(ticks[ticks.length - 1] + step);
+    for (let i = 0; i <= sessionMax + step; i += step) {
+      ticks.push(i);
+      if (i >= sessionMax) break;
     }
     return ticks;
   }, [combinedHistogramData]);
