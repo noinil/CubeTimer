@@ -51,4 +51,4 @@ coverage/
 .stylelintcache
 
 # Statistics
-./tool/*.json
+tool/*.json
