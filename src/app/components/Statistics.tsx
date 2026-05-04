@@ -300,7 +300,7 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
                       <Line
                         type="linear"
                         dataKey="density"
-                        stroke="#10B981"
+                        stroke="#065F46"
                         strokeDasharray="5 5"
                         dot={false}
                         strokeWidth={2}
