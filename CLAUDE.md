@@ -1,6 +1,13 @@
-# AGENT.md - Developer & AI Instructions for CubeTimer (v1.2.2)
+# AGENT.md - Developer & AI Instructions for CubeTimer (v2.0.0)
 
 This document provides essential context and coding standards for AI agents (Gemini, Claude, etc.) working on this repository.
+
+## 🆕 v2.0.0: Enhanced Statistics Visualization
+- **History Reference Lines (Time Distribution)**: Vertical dashed lines for `summary.overall_mean` (gray `#6B7280`), `pb_ao5.time` (purple `#6D28D9`), `pb_ao12.time` (amber `#A16207`). All null-safe.
+- **History Reference Lines (Trend Chart)**: Horizontal dashed lines for `pb_single.time` (green `#065F46`), `summary.overall_mean` (gray), `pb_ao5.time` (purple), `pb_ao12.time` (amber). All null-safe.
+- **Dynamic Y-Axis**: Time Distribution Y-axis domain is always `[0, sessionMax+1]`; tick step chosen via nice-number algorithm (~4–5 ticks).
+- **Dimmed History Curve**: History density overlay in Time Distribution uses `#065F46` (dark green).
+- **ExternalStats Type**: Added `.time: number | null` fields to `pb_single`, `pb_ao5`, `pb_ao12`; added `summary.overall_mean: number | null`.
 
 ## 🆕 v1.2.2: Historical Stats Integration
 - **Load History**: Support for loading external `*_stats.json` files via a "Load History" button in the header.
