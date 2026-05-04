@@ -169,22 +169,25 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     return ticks;
   }, [combinedHistogramData, timeRange]);
 
-  // 计算左侧 Y 轴刻度（动态 nice-number 步长，目标约 5 个 tick）
+  // 计算左侧 Y 轴刻度（domain 固定为 sessionMax+1，步长动态选 nice-number）
   const yAxisTicks = useMemo(() => {
     const sessionMax = Math.max(0, ...combinedHistogramData.map(d => d.sessionCount || 0));
-    if (sessionMax === 0) return [0];
-    const rawStep = sessionMax / 4;
+    const domainMax = sessionMax + 1;
+    if (domainMax <= 6) {
+      return Array.from({ length: domainMax + 1 }, (_, i) => i);
+    }
+    const rawStep = domainMax / 4;
     const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
     const normalized = rawStep / magnitude;
-    const step = normalized <= 1 ? magnitude
-                : normalized <= 2 ? 2 * magnitude
-                : normalized <= 5 ? 5 * magnitude
-                : 10 * magnitude;
+    const step = Math.round(
+      normalized <= 1 ? magnitude
+      : normalized <= 2 ? 2 * magnitude
+      : normalized <= 5 ? 5 * magnitude
+      : 10 * magnitude
+    );
     const ticks = [];
-    for (let i = 0; i <= sessionMax + step; i += step) {
-      ticks.push(i);
-      if (i >= sessionMax) break;
-    }
+    for (let i = 0; i <= domainMax; i += step) ticks.push(i);
+    if (ticks[ticks.length - 1] !== domainMax) ticks.push(domainMax);
     return ticks;
   }, [combinedHistogramData]);
 
