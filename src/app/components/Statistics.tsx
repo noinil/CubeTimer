@@ -360,13 +360,29 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
                   labelStyle={{ color: '#F3F4F6' }}
                   formatter={(value: number) => [`${value.toFixed(3)}s`, 'Time']}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="time" 
-                  stroke="#3B82F6" 
+                <Line
+                  type="monotone"
+                  dataKey="time"
+                  stroke="#3B82F6"
                   strokeWidth={2}
                   dot={{ fill: '#3B82F6', r: 4 }}
                 />
+                {externalStats?.pb_single?.time != null && (
+                  <ReferenceLine y={externalStats.pb_single.time} stroke="#065F46" strokeDasharray="4 4" strokeWidth={1.5}
+                    label={{ position: 'insideRight', value: 'PB', fill: '#065F46', fontSize: 9 }} />
+                )}
+                {externalStats?.summary?.overall_mean != null && (
+                  <ReferenceLine y={externalStats.summary.overall_mean} stroke="#6B7280" strokeDasharray="4 4" strokeWidth={1.5}
+                    label={{ position: 'insideRight', value: 'Hist Avg', fill: '#6B7280', fontSize: 9 }} />
+                )}
+                {externalStats?.pb_ao5?.time != null && (
+                  <ReferenceLine y={externalStats.pb_ao5.time} stroke="#6D28D9" strokeDasharray="4 4" strokeWidth={1.5}
+                    label={{ position: 'insideRight', value: 'PB Ao5', fill: '#6D28D9', fontSize: 9 }} />
+                )}
+                {externalStats?.pb_ao12?.time != null && (
+                  <ReferenceLine y={externalStats.pb_ao12.time} stroke="#A16207" strokeDasharray="4 4" strokeWidth={1.5}
+                    label={{ position: 'insideRight', value: 'PB Ao12', fill: '#A16207', fontSize: 9 }} />
+                )}
               </LineChart>
             </ResponsiveContainer>
           ) : (
