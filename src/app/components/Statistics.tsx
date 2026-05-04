@@ -112,20 +112,16 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     };
   }, [records, externalStats]);
 
-  // 综合直方图数据 (Session + History)
+  // Session 直方图数据
   const combinedHistogramData = useMemo(() => {
     const validRecords = records.filter(r => !r.dnf);
     const sessionTimes = validRecords.map(r => (r.time + (r.plus2 ? 2000 : 0)) / 1000);
-
-    const hist = externalStats?.histogram;
-    const hasHistory = hist && hist.bin_edges.length > 0;
 
     const { min: minX, max: maxX } = timeRange;
     const binCount = 12;
     const range = maxX - minX;
     const binSize = range / binCount;
 
-    // 2. 生成 12 个 Bins
     const bins = Array(binCount).fill(0).map((_, i) => {
       const start = minX + i * binSize;
       const end = start + binSize;
@@ -133,32 +129,31 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
         label: `${start.toFixed(1)}-${end.toFixed(1)}s`,
         center: (start + end) / 2,
         sessionCount: 0,
-        historyDensity: null as number | null,
       };
     });
 
-    // 3. 将 Session 数据分桶
     sessionTimes.forEach(t => {
       const index = Math.min(Math.floor((t - minX) / binSize), binCount - 1);
       if (index >= 0) bins[index].sessionCount++;
     });
 
-    // 4. 将历史曲线对齐
-    if (hasHistory) {
-      const totalHistory = hist!.counts.reduce((a, b) => a + b, 0);
-      bins.forEach(bin => {
-        for (let i = 0; i < hist!.counts.length; i++) {
-          if (bin.center >= hist!.bin_edges[i] && bin.center <= hist!.bin_edges[i+1]) {
-            const binWidth = hist!.bin_edges[i+1] - hist!.bin_edges[i];
-            bin.historyDensity = totalHistory > 0 ? (hist!.counts[i] / (totalHistory * binWidth)) : 0;
-            break;
-          }
-        }
-      });
-    }
-
     return bins;
-  }, [records, externalStats, timeRange]);
+  }, [records, timeRange]);
+
+  // 历史折线数据：直接来自 externalStats，固定不变
+  const historyLineData = useMemo(() => {
+    const hist = externalStats?.histogram;
+    if (!hist || hist.bin_edges.length < 2) return [];
+    const total = hist.counts.reduce((a, b) => a + b, 0);
+    if (total === 0) return [];
+    return hist.counts.map((count, i) => {
+      const binWidth = hist.bin_edges[i + 1] - hist.bin_edges[i];
+      return {
+        center: (hist.bin_edges[i] + hist.bin_edges[i + 1]) / 2,
+        density: count / (total * binWidth),
+      };
+    });
+  }, [externalStats]);
 
   // 计算 X 轴整数刻度
   const xAxisTicks = useMemo(() => {
@@ -289,17 +284,17 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
                   }}
                 />
                 <Bar yAxisId="left" dataKey="sessionCount" name="Session" fill="#3B82F6" fillOpacity={0.8} radius={[4, 4, 0, 0]} barSize={24} />
-                {externalStats?.histogram && (
-                  <Line 
-                    yAxisId="right" 
-                    type="monotone" 
-                    dataKey="historyDensity" 
-                    name="History" 
-                    stroke="#10B981" 
-                    strokeDasharray="5 5" 
-                    dot={false} 
+                {historyLineData.length > 0 && (
+                  <Line
+                    yAxisId="right"
+                    data={historyLineData}
+                    type="monotone"
+                    dataKey="density"
+                    name="History"
+                    stroke="#10B981"
+                    strokeDasharray="5 5"
+                    dot={false}
                     strokeWidth={2}
-                    connectNulls
                   />
                 )}
               </ComposedChart>
