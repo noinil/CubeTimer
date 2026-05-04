@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ComposedChart } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Trash2, Award, TrendingDown, TrendingUp, Clock } from 'lucide-react';
 import type { TimeRecord, PuzzleType, ExternalStats } from '../types/cube';
 import { exportRecords } from '../utils/storage';
@@ -25,6 +25,7 @@ function calcAo(records: TimeRecord[], startIndex: number, n: number): number | 
 
 export default function Statistics({ records, puzzleType, externalStats, onDeleteRecord, onClearAll }: StatisticsProps) {
   const handleSaveRecords = () => exportRecords(records, puzzleType);
+
 
   // 格式化时间
   const formatTime = (ms: number) => {
@@ -119,8 +120,7 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
 
     const { min: minX, max: maxX } = timeRange;
     const binCount = 12;
-    const range = maxX - minX;
-    const binSize = range / binCount;
+    const binSize = (maxX - minX) / binCount;
 
     const bins = Array(binCount).fill(0).map((_, i) => {
       const start = minX + i * binSize;
@@ -140,7 +140,7 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     return bins;
   }, [records, timeRange]);
 
-  // 历史折线数据：直接来自 externalStats，固定不变
+  // 历史折线数据：直接来自 externalStats，完全独立，固定不变
   const historyLineData = useMemo(() => {
     const hist = externalStats?.histogram;
     if (!hist || hist.bin_edges.length < 2) return [];
@@ -247,58 +247,70 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
         <div className="bg-gray-800 rounded-lg p-4">
           <h3 className="text-base font-semibold text-white mb-3">Time Distribution</h3>
           {combinedHistogramData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={160}>
-              <ComposedChart 
-                data={combinedHistogramData}
-                margin={{ top: 10, right: 5, bottom: 0, left: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" yAxisId="left" />
-                <XAxis 
-                  dataKey="center"
-                  type="number"
-                  domain={['auto', 'auto']}
-                  ticks={xAxisTicks}
-                  stroke="#9CA3AF"
-                  fontSize={12}
-                  tickFormatter={(v) => `${v}s`}
-                />
-                <YAxis 
-                  yAxisId="left" 
-                  stroke="#3B82F6" 
-                  fontSize={12} 
-                  allowDecimals={false} 
-                  width={30}
-                  ticks={yAxisTicks}
-                  domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
-                  interval={0}
-                />
-                <YAxis yAxisId="right" orientation="right" stroke="#10B981" fontSize={12} hide={true} width={30} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
-                  labelStyle={{ color: '#F3F4F6' }}
-                  labelFormatter={(v) => `${Number(v).toFixed(2)}s`}
-                  formatter={(value: any, name: string) => {
-                    if (name === 'Session') return [`${value} solves`, 'Current Session'];
-                    if (name === 'History') return [value ? (value as number).toFixed(4) : '-', 'Historical Density'];
-                    return [value, name];
-                  }}
-                />
-                <Bar yAxisId="left" dataKey="sessionCount" name="Session" fill="#3B82F6" fillOpacity={0.8} radius={[4, 4, 0, 0]} barSize={24} />
-                {historyLineData.length > 0 && (
-                  <Line
-                    yAxisId="right"
-                    data={historyLineData}
-                    type="monotone"
-                    dataKey="density"
-                    name="History"
-                    stroke="#10B981"
-                    strokeDasharray="5 5"
-                    dot={false}
-                    strokeWidth={2}
+            <div style={{ position: 'relative', height: 160 }}>
+              {/* Session bars — 独立 BarChart，bandwidth 只基于 12 个 bins */}
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={combinedHistogramData} margin={{ top: 10, right: 5, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" />
+                  <XAxis
+                    dataKey="center"
+                    type="number"
+                    domain={[timeRange.min, timeRange.max]}
+                    ticks={xAxisTicks}
+                    stroke="#9CA3AF"
+                    fontSize={12}
+                    tickFormatter={(v) => `${v}s`}
                   />
-                )}
-              </ComposedChart>
-            </ResponsiveContainer>
+                  <YAxis
+                    stroke="#3B82F6"
+                    fontSize={12}
+                    allowDecimals={false}
+                    width={30}
+                    ticks={yAxisTicks}
+                    domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
+                    interval={0}
+                  />
+                  <Tooltip
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
+                    labelStyle={{ color: '#F3F4F6' }}
+                    labelFormatter={(v) => `${Number(v).toFixed(2)}s`}
+                    formatter={(value: any, name: string) => {
+                      if (name === 'Session') return [`${value} solves`, 'Current Session'];
+                      return [value, name];
+                    }}
+                  />
+                  <Bar dataKey="sessionCount" name="Session" fill="#3B82F6" fillOpacity={0.8} radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+              {/* 历史折线叠加层 — 完全独立的 LineChart，pointerEvents:none 不干扰 bar 的 tooltip */}
+              {historyLineData.length > 0 && (
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <LineChart data={historyLineData} margin={{ top: 10, right: 5, bottom: 0, left: 30 }}>
+                      <XAxis
+                        dataKey="center"
+                        type="number"
+                        domain={[timeRange.min, timeRange.max]}
+                        tick={false}
+                        axisLine={false}
+                        height={30}
+                      />
+                      <YAxis hide={true} domain={[0, 'auto']} />
+                      <Line
+                        type="linear"
+                        dataKey="density"
+                        stroke="#10B981"
+                        strokeDasharray="5 5"
+                        dot={false}
+                        strokeWidth={2}
+                        isAnimationActive={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="h-[160px] flex items-center justify-center text-gray-500">
               No Data
