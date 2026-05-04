@@ -17,7 +17,7 @@ import { RotateCcw, Github, Globe, Tag, History } from 'lucide-react';
 import { useRef } from 'react';
 
 export default function App() {
-  const version = "1.2.2";
+  const version = "2.0.0";
   const [puzzleType, setPuzzleType] = useState<PuzzleType>('3x3');
   const [scramble, setScramble] = useState('');
   const [cubeState, setCubeState] = useState<CubeState | null>(null);

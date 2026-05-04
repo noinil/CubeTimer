@@ -1,4 +1,4 @@
-# 🧩 CubeTimer v1.2.1
+# 🧩 CubeTimer v2.0.0
 
 [![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![Three.js](https://img.shields.io/badge/Three.js-r183-black?style=for-the-badge&logo=three.js)](https://threejs.org/)
@@ -7,6 +7,13 @@
 A high-performance, visually stunning **Professional 3D Cube Timer**. Powered by WebGL, featuring an industrial-grade aesthetic, millisecond-level precision, and full support for 2x2–7x7 cubes plus WCA-standard Megaminx.
 
 ---
+
+## 🆕 v2.0.0: Enhanced Statistics Visualization
+
+- **📊 History Reference Lines in Time Distribution**: Vertical dashed lines for historical average (gray), PB Ao5 (purple), and PB Ao12 (amber) overlaid on the session histogram.
+- **📈 History Reference Lines in Trend Chart**: Horizontal dashed lines for all-time PB (green), historical average (gray), PB Ao5 (purple), and PB Ao12 (amber) in the Recent 20 Solves panel.
+- **Dynamic Y-Axis Ticks**: Time Distribution Y-axis now uses a nice-number algorithm to keep tick labels readable regardless of solve count, while preserving the `sessionMax+1` domain.
+- **Dimmed History Curve**: History density curve in Time Distribution uses a darker green to reduce visual noise.
 
 ## 🆕 v1.2.1: Penalty Support & Interaction Fixes
 
