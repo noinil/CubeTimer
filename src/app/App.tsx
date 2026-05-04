@@ -12,15 +12,37 @@ import { generateScramble6x6, applyScramble6x6 } from './utils/cubeLogic6x6';
 import { generateScramble7x7, applyScramble7x7 } from './utils/cubeLogic7x7';
 import { generateScrambleMegaminx, applyScrambleMegaminx } from './utils/cubeLogicMegaminx';
 import { saveRecord, getRecords, deleteRecord, clearAllRecords, exportRecords, updateRecord } from './utils/storage';
-import type { TimeRecord, CubeState, PuzzleType } from './types/cube';
-import { RotateCcw, Github, Globe, Tag } from 'lucide-react';
+import type { TimeRecord, CubeState, PuzzleType, ExternalStats } from './types/cube';
+import { RotateCcw, Github, Globe, Tag, History } from 'lucide-react';
+import { useRef } from 'react';
 
 export default function App() {
-  const version = "1.2.1";
+  const version = "1.2.2";
   const [puzzleType, setPuzzleType] = useState<PuzzleType>('3x3');
   const [scramble, setScramble] = useState('');
   const [cubeState, setCubeState] = useState<CubeState | null>(null);
   const [records, setRecords] = useState<TimeRecord[]>([]);
+  const [externalStats, setExternalStats] = useState<ExternalStats | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 加载外部统计文件
+  const handleLoadHistory = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        setExternalStats(json);
+      } catch (err) {
+        alert('Failed to parse history stats file.');
+      }
+    };
+    reader.readAsText(file);
+    // 重置 input 值以便可以重复选择同一个文件
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   // 应用手动输入的打乱公式
   const handleManualScrambleApply = (manualScramble: string) => {
@@ -187,6 +209,22 @@ export default function App() {
                 <option value="7x7">7×7</option>
                 <option value="Megaminx">Megaminx</option>
               </select>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleLoadHistory}
+                accept=".json"
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded border border-gray-600 transition-colors text-xs text-gray-300"
+                title="Load history stats JSON"
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>Load History</span>
+              </button>
             </div>
 
             <div className="hidden xs:block border-l border-gray-700 h-4 mx-1"></div>
@@ -275,6 +313,7 @@ export default function App() {
         <Statistics
           records={records}
           puzzleType={puzzleType}
+          externalStats={externalStats}
           onDeleteRecord={handleDeleteRecord}
           onClearAll={handleClearAll}
         />

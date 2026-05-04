@@ -1,6 +1,12 @@
-# AGENT.md - Developer & AI Instructions for CubeTimer (v1.2.1)
+# AGENT.md - Developer & AI Instructions for CubeTimer (v1.2.2)
 
 This document provides essential context and coding standards for AI agents (Gemini, Claude, etc.) working on this repository.
+
+## 🆕 v1.2.2: Historical Stats Integration
+- **Load History**: Support for loading external `*_stats.json` files via a "Load History" button in the header.
+- **External Stats Display**: Historical PBs and averages are displayed in the `StatCard` components next to current session stats.
+- **JSON Schema**: Supports mapping `pb_single.time_fmt`, `summary.overall_mean_fmt`, `pb_ao5.time_fmt`, and `pb_ao12.time_fmt`.
+- **UI Styling**: Historical values use the same color as session values but with `opacity-40` and include "PB" or "HIST" labels.
 
 ## 🆕 v1.2.1: Penalty Logic & Interaction Fixes
 - **DNF & +2 Penalty**: Support for marking the most recent record as DNF or applying a +2s penalty via UI buttons.

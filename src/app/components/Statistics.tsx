@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Trash2, Award, TrendingDown, TrendingUp, Clock } from 'lucide-react';
-import type { TimeRecord, PuzzleType } from '../types/cube';
+import type { TimeRecord, PuzzleType, ExternalStats } from '../types/cube';
 import { exportRecords } from '../utils/storage';
 
 interface StatisticsProps {
   records: TimeRecord[];
   puzzleType: PuzzleType;
+  externalStats: ExternalStats | null;
   onDeleteRecord: (id: string) => void;
   onClearAll: () => void;
 }
@@ -22,7 +23,7 @@ function calcAo(records: TimeRecord[], startIndex: number, n: number): number | 
   return middle.reduce((a, b) => a + b, 0) / middle.length;
 }
 
-export default function Statistics({ records, puzzleType, onDeleteRecord, onClearAll }: StatisticsProps) {
+export default function Statistics({ records, puzzleType, externalStats, onDeleteRecord, onClearAll }: StatisticsProps) {
   const handleSaveRecords = () => exportRecords(records, puzzleType);
 
   // 格式化时间
@@ -134,6 +135,7 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
           label="Best"
           value={stats.best > 0 ? formatTime(stats.best) : '-'}
           color="text-green-400"
+          historyValue={externalStats?.pb_single?.time_fmt}
         />
         <StatCard
           icon={<TrendingDown className="w-5 h-5" />}
@@ -146,18 +148,21 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
           label="Average"
           value={stats.average > 0 ? formatTime(stats.average) : '-'}
           color="text-blue-400"
+          historyValue={externalStats?.summary?.overall_mean_fmt}
         />
         <StatCard
           icon={<TrendingUp className="w-5 h-5" />}
           label="Ao5"
           value={stats.avg5 > 0 ? formatTime(stats.avg5) : '-'}
           color="text-purple-400"
+          historyValue={externalStats?.pb_ao5?.time_fmt}
         />
         <StatCard
           icon={<TrendingUp className="w-5 h-5" />}
           label="Ao12"
           value={stats.avg12 > 0 ? formatTime(stats.avg12) : '-'}
           color="text-yellow-400"
+          historyValue={externalStats?.pb_ao12?.time_fmt}
         />
         <StatCard
           icon={<Clock className="w-5 h-5" />}
@@ -329,15 +334,42 @@ export default function Statistics({ records, puzzleType, onDeleteRecord, onClea
   );
 }
 
-function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
+function StatCard({ 
+  icon, 
+  label, 
+  value, 
+  color, 
+  historyValue 
+}: { 
+  icon: React.ReactNode; 
+  label: string; 
+  value: string; 
+  color: string;
+  historyValue?: string;
+}) {
+  // 根据标签决定历史数据的提示文字
+  const historyLabel = label === 'Average' ? 'Hist' : 'PB';
+
   return (
     <div className="bg-gray-800 rounded-lg p-3">
-      <div className="flex items-center space-x-1.5 text-gray-400 mb-1">
-        {icon}
-        <span className="text-xs">{label}</span>
+      <div className="flex items-center justify-between text-gray-400 mb-1">
+        <div className="flex items-center space-x-1.5">
+          {icon}
+          <span className="text-xs">{label}</span>
+        </div>
+        {historyValue && (
+          <span className="text-[10px] uppercase tracking-wider opacity-60">{historyLabel}</span>
+        )}
       </div>
-      <div className={`text-xl font-bold ${color}`}>
-        {value}
+      <div className="flex justify-between items-baseline">
+        <div className={`text-xl font-bold ${color}`}>
+          {value}
+        </div>
+        {historyValue && (
+          <div className={`text-xl font-bold ${color} opacity-40 font-mono ml-2 shrink-0`} title={`Historical ${historyLabel}`}>
+            {historyValue}
+          </div>
+        )}
       </div>
     </div>
   );

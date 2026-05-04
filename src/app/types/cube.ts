@@ -12,6 +12,21 @@ export interface TimeRecord {
   puzzleType?: PuzzleType;
 }
 
+export interface ExternalStats {
+  summary?: {
+    overall_mean_fmt?: string;
+  };
+  pb_single?: {
+    time_fmt?: string;
+  };
+  pb_ao5?: {
+    time_fmt?: string;
+  };
+  pb_ao12?: {
+    time_fmt?: string;
+  };
+}
+
 // 通用魔方状态
 export interface CubeState {
   faces?: {
