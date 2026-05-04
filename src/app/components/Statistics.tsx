@@ -83,6 +83,35 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     };
   }, [records]);
 
+  // 计算全局时间范围 (用于同步两个图表的坐标轴)
+  const timeRange = useMemo(() => {
+    const validRecords = records.filter(r => !r.dnf);
+    const sessionTimes = validRecords.map(r => (r.time + (r.plus2 ? 2000 : 0)) / 1000);
+    const hist = externalStats?.histogram;
+    const hasHistory = hist && hist.bin_edges.length > 0;
+
+    let minX = Infinity;
+    let maxX = -Infinity;
+
+    if (hasHistory) {
+      minX = hist!.bin_edges[0];
+      maxX = hist!.bin_edges[hist!.bin_edges.length - 1];
+    }
+    if (sessionTimes.length > 0) {
+      minX = Math.min(minX, ...sessionTimes);
+      maxX = Math.max(maxX, ...sessionTimes);
+    }
+
+    if (minX === Infinity) return { min: 0, max: 20 };
+
+    const padding = (maxX - minX) * 0.05 || 1;
+    // 调整为整数边界：小于 min 的最大整数，大于 max 的最小整数
+    return {
+      min: Math.floor(Math.max(0, minX - padding)),
+      max: Math.ceil(maxX + padding)
+    };
+  }, [records, externalStats]);
+
   // 综合直方图数据 (Session + History)
   const combinedHistogramData = useMemo(() => {
     const validRecords = records.filter(r => !r.dnf);
@@ -91,33 +120,12 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     const hist = externalStats?.histogram;
     const hasHistory = hist && hist.bin_edges.length > 0;
 
-    // 1. 确定全局范围 (history_bin_min 和 history_bin_max)
-    let minX = Infinity;
-    let maxX = -Infinity;
-
-    if (hasHistory) {
-      minX = hist!.bin_edges[0];
-      maxX = hist!.bin_edges[hist!.bin_edges.length - 1];
-    }
-
-    // 如果 Session 超出历史范围，扩张它
-    if (sessionTimes.length > 0) {
-      minX = Math.min(minX, ...sessionTimes);
-      maxX = Math.max(maxX, ...sessionTimes);
-    }
-
-    if (minX === Infinity) return [];
-
-    // 稍微向外扩张一点 (padding)
-    const padding = (maxX - minX) * 0.05 || 1;
-    minX = Math.max(0, minX - padding);
-    maxX = maxX + padding;
-
+    const { min: minX, max: maxX } = timeRange;
     const binCount = 12;
     const range = maxX - minX;
     const binSize = range / binCount;
 
-    // 2. 生成 12 个 Bins (作为 Categorical X 轴)
+    // 2. 生成 12 个 Bins
     const bins = Array(binCount).fill(0).map((_, i) => {
       const start = minX + i * binSize;
       const end = start + binSize;
@@ -135,11 +143,10 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
       if (index >= 0) bins[index].sessionCount++;
     });
 
-    // 4. 将历史曲线对齐到这些 Bins
+    // 4. 将历史曲线对齐
     if (hasHistory) {
       const totalHistory = hist!.counts.reduce((a, b) => a + b, 0);
       bins.forEach(bin => {
-        // 寻找中心点落在历史的哪个原始分桶中
         for (let i = 0; i < hist!.counts.length; i++) {
           if (bin.center >= hist!.bin_edges[i] && bin.center <= hist!.bin_edges[i+1]) {
             const binWidth = hist!.bin_edges[i+1] - hist!.bin_edges[i];
@@ -151,25 +158,21 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     }
 
     return bins;
-  }, [records, externalStats]);
+  }, [records, externalStats, timeRange]);
 
   // 计算 X 轴整数刻度
   const xAxisTicks = useMemo(() => {
     if (combinedHistogramData.length === 0) return [];
-    const min = combinedHistogramData[0].center;
-    const max = combinedHistogramData[combinedHistogramData.length - 1].center;
-    const start = Math.floor(min);
-    const end = Math.ceil(max);
+    const { min: start, max: end } = timeRange;
     const range = end - start;
     
-    // 根据范围决定步长，确保刻度不拥挤
     const step = range > 20 ? 5 : range > 10 ? 2 : 1;
     const ticks = [];
-    for (let i = start; i <= end; i += step) {
+    for (let i = Math.floor(start); i <= Math.ceil(end); i += step) {
       ticks.push(i);
     }
     return ticks;
-  }, [combinedHistogramData]);
+  }, [combinedHistogramData, timeRange]);
 
   // 计算左侧 Y 轴刻度
   const yAxisTicks = useMemo(() => {
@@ -325,6 +328,9 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
                   stroke="#9CA3AF" 
                   fontSize={12}
                   label={{ value: 'Time (s)', angle: -90, position: 'insideLeft', fill: '#9CA3AF' }}
+                  domain={[timeRange.min, timeRange.max]}
+                  ticks={xAxisTicks}
+                  tickFormatter={(v) => `${v}s`}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
@@ -334,9 +340,9 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
                 <Line 
                   type="monotone" 
                   dataKey="time" 
-                  stroke="#10B981" 
+                  stroke="#3B82F6" 
                   strokeWidth={2}
-                  dot={{ fill: '#10B981', r: 4 }}
+                  dot={{ fill: '#3B82F6', r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
