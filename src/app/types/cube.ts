@@ -25,6 +25,13 @@ export interface ExternalStats {
   pb_ao12?: {
     time_fmt?: string;
   };
+  histogram?: {
+    bin_edges: number[];
+    counts: number[];
+    underflow: number;
+    overflow: number;
+    unit: string;
+  };
 }
 
 // 通用魔方状态

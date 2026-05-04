@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, ComposedChart } from 'recharts';
 import { Trash2, Award, TrendingDown, TrendingUp, Clock } from 'lucide-react';
 import type { TimeRecord, PuzzleType, ExternalStats } from '../types/cube';
 import { exportRecords } from '../utils/storage';
@@ -83,37 +83,108 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
     };
   }, [records]);
 
-  // Histogram 数据
-  const histogramData = useMemo(() => {
-    if (records.length === 0) return [];
-
+  // 综合直方图数据 (Session + History)
+  const combinedHistogramData = useMemo(() => {
     const validRecords = records.filter(r => !r.dnf);
-    const times = validRecords.map(r => r.time + (r.plus2 ? 2000 : 0));
-    
-    if (times.length === 0) return [];
+    const sessionTimes = validRecords.map(r => (r.time + (r.plus2 ? 2000 : 0)) / 1000);
 
-    const min = Math.min(...times);
-    const max = Math.max(...times);
-    const range = max - min;
-    const binCount = Math.min(10, Math.ceil(times.length / 3));
-    const binSize = Math.max(range / binCount, 1); // Ensure binSize is at least 1
+    const hist = externalStats?.histogram;
+    const hasHistory = hist && hist.bin_edges.length > 0;
 
-    const bins = Array(binCount).fill(0).map((_, i) => ({
-      id: `bin-${i}`, // Add unique id
-      range: `${formatTime(min + i * binSize)}-${formatTime(min + (i + 1) * binSize)}`,
-      count: 0,
-      start: min + i * binSize,
-    }));
+    // 1. 确定全局范围 (history_bin_min 和 history_bin_max)
+    let minX = Infinity;
+    let maxX = -Infinity;
 
-    times.forEach(time => {
-      const binIndex = Math.min(Math.floor((time - min) / binSize), binCount - 1);
-      if (binIndex >= 0 && binIndex < binCount) {
-        bins[binIndex].count++;
-      }
+    if (hasHistory) {
+      minX = hist!.bin_edges[0];
+      maxX = hist!.bin_edges[hist!.bin_edges.length - 1];
+    }
+
+    // 如果 Session 超出历史范围，扩张它
+    if (sessionTimes.length > 0) {
+      minX = Math.min(minX, ...sessionTimes);
+      maxX = Math.max(maxX, ...sessionTimes);
+    }
+
+    if (minX === Infinity) return [];
+
+    // 稍微向外扩张一点 (padding)
+    const padding = (maxX - minX) * 0.05 || 1;
+    minX = Math.max(0, minX - padding);
+    maxX = maxX + padding;
+
+    const binCount = 12;
+    const range = maxX - minX;
+    const binSize = range / binCount;
+
+    // 2. 生成 12 个 Bins (作为 Categorical X 轴)
+    const bins = Array(binCount).fill(0).map((_, i) => {
+      const start = minX + i * binSize;
+      const end = start + binSize;
+      return {
+        label: `${start.toFixed(1)}-${end.toFixed(1)}s`,
+        center: (start + end) / 2,
+        sessionCount: 0,
+        historyDensity: null as number | null,
+      };
     });
 
+    // 3. 将 Session 数据分桶
+    sessionTimes.forEach(t => {
+      const index = Math.min(Math.floor((t - minX) / binSize), binCount - 1);
+      if (index >= 0) bins[index].sessionCount++;
+    });
+
+    // 4. 将历史曲线对齐到这些 Bins
+    if (hasHistory) {
+      const totalHistory = hist!.counts.reduce((a, b) => a + b, 0);
+      bins.forEach(bin => {
+        // 寻找中心点落在历史的哪个原始分桶中
+        for (let i = 0; i < hist!.counts.length; i++) {
+          if (bin.center >= hist!.bin_edges[i] && bin.center <= hist!.bin_edges[i+1]) {
+            const binWidth = hist!.bin_edges[i+1] - hist!.bin_edges[i];
+            bin.historyDensity = totalHistory > 0 ? (hist!.counts[i] / (totalHistory * binWidth)) : 0;
+            break;
+          }
+        }
+      });
+    }
+
     return bins;
-  }, [records]);
+  }, [records, externalStats]);
+
+  // 计算 X 轴整数刻度
+  const xAxisTicks = useMemo(() => {
+    if (combinedHistogramData.length === 0) return [];
+    const min = combinedHistogramData[0].center;
+    const max = combinedHistogramData[combinedHistogramData.length - 1].center;
+    const start = Math.floor(min);
+    const end = Math.ceil(max);
+    const range = end - start;
+    
+    // 根据范围决定步长，确保刻度不拥挤
+    const step = range > 20 ? 5 : range > 10 ? 2 : 1;
+    const ticks = [];
+    for (let i = start; i <= end; i += step) {
+      ticks.push(i);
+    }
+    return ticks;
+  }, [combinedHistogramData]);
+
+  // 计算左侧 Y 轴刻度
+  const yAxisTicks = useMemo(() => {
+    const sessionMax = Math.max(0, ...combinedHistogramData.map(d => d.sessionCount || 0));
+    const limit = sessionMax + 1;
+    const ticks = [];
+    if (limit <= 10) {
+      for (let i = 0; i <= limit; i++) ticks.push(i);
+    } else {
+      const step = Math.max(1, Math.ceil(limit / 6));
+      for (let i = 0; i <= limit; i += step) ticks.push(i);
+      if (ticks[ticks.length - 1] < limit) ticks.push(ticks[ticks.length - 1] + step);
+    }
+    return ticks;
+  }, [combinedHistogramData]);
 
   // 趋势数据
   const trendData = useMemo(() => {
@@ -177,27 +248,58 @@ export default function Statistics({ records, puzzleType, externalStats, onDelet
         {/* Histogram */}
         <div className="bg-gray-800 rounded-lg p-4">
           <h3 className="text-base font-semibold text-white mb-3">Time Distribution</h3>
-          {histogramData.length > 0 ? (
+          {combinedHistogramData.length > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={histogramData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <ComposedChart 
+                data={combinedHistogramData}
+                margin={{ top: 10, right: 5, bottom: 0, left: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#374151" yAxisId="left" />
                 <XAxis 
-                  dataKey="id"
+                  dataKey="center"
+                  type="number"
+                  domain={['auto', 'auto']}
+                  ticks={xAxisTicks}
                   stroke="#9CA3AF"
                   fontSize={12}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  tickFormatter={(value, index) => histogramData[index]?.range || ''}
+                  tickFormatter={(v) => `${v}s`}
                 />
-                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <YAxis 
+                  yAxisId="left" 
+                  stroke="#3B82F6" 
+                  fontSize={12} 
+                  allowDecimals={false} 
+                  width={30}
+                  ticks={yAxisTicks}
+                  domain={[0, yAxisTicks[yAxisTicks.length - 1]]}
+                  interval={0}
+                />
+                <YAxis yAxisId="right" orientation="right" stroke="#10B981" fontSize={12} hide={true} width={30} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '8px' }}
                   labelStyle={{ color: '#F3F4F6' }}
-                  labelFormatter={(value, payload) => payload[0]?.payload?.range || ''}
+                  labelFormatter={(v) => `${Number(v).toFixed(2)}s`}
+                  formatter={(value: any, name: string) => {
+                    if (name === 'Session') return [`${value} solves`, 'Current Session'];
+                    if (name === 'History') return [value ? (value as number).toFixed(4) : '-', 'Historical Density'];
+                    return [value, name];
+                  }}
                 />
-                <Bar dataKey="count" fill="#3B82F6" radius={[8, 8, 0, 0]} />
-              </BarChart>
+                <Bar yAxisId="left" dataKey="sessionCount" name="Session" fill="#3B82F6" fillOpacity={0.8} radius={[4, 4, 0, 0]} barSize={24} />
+                {externalStats?.histogram && (
+                  <Line 
+                    yAxisId="right" 
+                    type="monotone" 
+                    dataKey="historyDensity" 
+                    name="History" 
+                    stroke="#10B981" 
+                    strokeDasharray="5 5" 
+                    dot={false} 
+                    strokeWidth={2}
+                    connectNulls
+                  />
+                )}
+              </ComposedChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-[160px] flex items-center justify-center text-gray-500">
